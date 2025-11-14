@@ -1,0 +1,1 @@
+rootProject.name = "gonexar-spatial-jpa"
