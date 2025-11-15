@@ -40,7 +40,7 @@ object GonexarSpatial {
         )
     }
 
-    fun geographyReference(
+    private fun geographyReference(
         geom: Geometry,
         cb: CriteriaBuilder
     ): Expression<Any> {
@@ -51,7 +51,7 @@ object GonexarSpatial {
         )
     }
 
-    fun <T> geographyField(
+    private fun <T> geographyField(
         root: Root<T>,
         cb: CriteriaBuilder,
         attr: String,
