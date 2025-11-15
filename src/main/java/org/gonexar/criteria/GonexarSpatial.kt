@@ -15,23 +15,12 @@ object GonexarSpatial {
         geom: Geometry,
         meters: Double
     ): Predicate {
-        val left = cb.function(
-            "geography",
-            Any::class.java,
-            root.get<Geometry>(attr)
-        )
-        val right = cb.function(
-            "geography",
-            Any::class.java,
-            cb.literal(geom)
-        )
-
         return cb.isTrue(
             cb.function(
                 "ST_DWithin",
                 Boolean::class.java,
-                left,
-                right,
+                geographyField(root, cb, attr),
+                geographyReference(geom, cb),
                 cb.literal(meters)
             )
         )
@@ -43,26 +32,34 @@ object GonexarSpatial {
         attr: String,
         geom: Geometry
     ): Expression<Double> {
-
-        // geography(a.polygon)
-        val left = cb.function(
-            "geography",
-            Any::class.java,
-            root.get<Geometry>(attr)
+        return cb.function(
+            "ST_Distance",
+            Double::class.java,
+            geographyField(root, cb, attr),
+            geographyReference(geom, cb)
         )
+    }
 
-        // geography(:geom)
-        val right = cb.function(
+    fun geographyReference(
+        geom: Geometry,
+        cb: CriteriaBuilder
+    ): Expression<Any> {
+        return cb.function(
             "geography",
             Any::class.java,
             cb.literal(geom)
         )
+    }
 
+    fun <T> geographyField(
+        root: Root<T>,
+        cb: CriteriaBuilder,
+        attr: String,
+    ): Expression<Any> {
         return cb.function(
-            "ST_Distance",
-            Double::class.java,
-            left,
-            right
+            "geography",
+            Any::class.java,
+            root.get<Geometry>(attr)
         )
     }
 
