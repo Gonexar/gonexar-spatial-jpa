@@ -14,36 +14,64 @@ object GonexarSpatial {
         attr: String,
         geom: Geometry,
         meters: Double
-    ): Predicate =
-        cb.isTrue(
+    ): Predicate {
+        val left = cb.function(
+            "geography",
+            Any::class.java,
+            root.get<Geometry>(attr)
+        )
+        val right = cb.function(
+            "geography",
+            Any::class.java,
+            cb.literal(geom)
+        )
+
+        return cb.isTrue(
             cb.function(
                 "ST_DWithin",
                 Boolean::class.java,
-                root.get<Geometry>(attr),
-                cb.literal(geom),      // seu UserType converte para WKT
+                left,
+                right,
                 cb.literal(meters)
             )
         )
+    }
 
     fun <T> distance(
         cb: CriteriaBuilder,
         root: Root<T>,
         attr: String,
         geom: Geometry
-    ): Expression<Double> =
-        cb.function(
-            "ST_Distance",
-            Double::class.java,
-            root.get<Geometry>(attr),
+    ): Expression<Double> {
+
+        // geography(a.polygon)
+        val left = cb.function(
+            "geography",
+            Any::class.java,
+            root.get<Geometry>(attr)
+        )
+
+        // geography(:geom)
+        val right = cb.function(
+            "geography",
+            Any::class.java,
             cb.literal(geom)
         )
+
+        return cb.function(
+            "ST_Distance",
+            Double::class.java,
+            left,
+            right
+        )
+    }
 
     fun <T> intersects(
         cb: CriteriaBuilder,
         root: Root<T>,
         attr: String,
         geom: Geometry
-    ): Predicate =
+    ): Expression<Boolean> =
         cb.isTrue(
             cb.function(
                 "ST_Intersects",
