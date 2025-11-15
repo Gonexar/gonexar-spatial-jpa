@@ -25,29 +25,16 @@ class GonexarSpatialFunction {
 
         // ST_Distance(geography(a.geom), geography(:geom))
         val distance: Expression<Double> = GonexarSpatial.distance(
-            cb = cb,
-            root = root,
-            attr = geomField,
-            geom = referenceGeom
+            cb = cb, root = root, attr = geomField, geom = referenceGeom
         )
-
         // ST_Intersects(a.geom, :geom)
-        val intersects: Expression<Boolean> =
-            cb.function(
-                "ST_Intersects",
-                Boolean::class.java,
-                root.get<Geometry>(geomField),
-                cb.literal(referenceGeom)
-            )
-
-        val withinRadius: Predicate = GonexarSpatial.dWithin(
-            cb = cb,
-            root = root,
-            attr = geomField,
-            geom = referenceGeom,
-            meters = radiusMeters,
+        val intersects: Expression<Boolean> = GonexarSpatial.intersects(
+            cb = cb, root = root, attr = geomField, geom = referenceGeom
         )
-
+        //ST_DWithin(a.geom, a.geom, radius)
+        val withinRadius: Predicate = GonexarSpatial.dWithin(
+            cb = cb, root = root, attr = geomField, geom = referenceGeom, meters = radiusMeters,
+        )
         // SELECT DTO(entity, DataResult(distance, intersects))
         query.select(
             cb.construct(
