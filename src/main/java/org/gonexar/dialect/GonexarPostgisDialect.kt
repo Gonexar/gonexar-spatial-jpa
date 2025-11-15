@@ -8,7 +8,6 @@ import org.hibernate.type.StandardBasicTypes
 
 class GonexarPostgisDialect : PostgreSQLDialect() {
 
-
     override fun initializeFunctionRegistry(functionContributions: FunctionContributions) {
         super.initializeFunctionRegistry(functionContributions)
         val registry: SqmFunctionRegistry = functionContributions.functionRegistry
@@ -36,6 +35,16 @@ class GonexarPostgisDialect : PostgreSQLDialect() {
         registry.register(
             "ST_AsText",
             StandardSQLFunction("ST_AsText", StandardBasicTypes.STRING)
+        )
+
+        registry.register(
+            "ST_IsValid",
+            StandardSQLFunction("ST_IsValid", StandardBasicTypes.BOOLEAN)
+        )
+
+        registry.register(
+            "ST_IsValidDetail",
+            StandardSQLFunction("ST_IsValidDetail", StandardBasicTypes.STRING)
         )
     }
 }
