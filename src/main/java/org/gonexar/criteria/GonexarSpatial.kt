@@ -69,12 +69,10 @@ object GonexarSpatial {
         attr: String,
         geom: Geometry
     ): Expression<Boolean> =
-        cb.isTrue(
-            cb.function(
-                "ST_Intersects",
-                Boolean::class.java,
-                root.get<Geometry>(attr),
-                cb.literal(geom)
-            )
+        cb.function(
+            "ST_Intersects",
+            Boolean::class.java,
+            root.get<Geometry>(attr),
+            cb.literal(geom)
         )
 }
