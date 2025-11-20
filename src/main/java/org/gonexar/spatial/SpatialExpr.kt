@@ -24,8 +24,8 @@ class SpatialExpr<T>(
 ) {
     /**
      * Creates a new SpatialExpr with the same underlying expression
-     * but using a different alias.
+     * but using a different alias, maintaining the original type T.
      */
-    fun <X> alias(newName: String): SpatialExpr<X> =
-        SpatialExpr(newName, expr as Expression<X>)
+    fun alias(newName: String): SpatialExpr<T> =
+        SpatialExpr(newName, expr) // Retorna SpatialExpr<T>, sem cast inseguro.
 }

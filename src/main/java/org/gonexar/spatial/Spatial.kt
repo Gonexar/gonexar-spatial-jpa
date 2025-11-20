@@ -1,6 +1,5 @@
 package org.gonexar.spatial
 
-import org.gonexar.data.model.SpatialContext
 import kotlin.reflect.KClass
 
 fun <R : Any> spatial(

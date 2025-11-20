@@ -1,4 +1,4 @@
-package org.gonexar.data.model
+package org.gonexar.spatial
 
 import jakarta.persistence.EntityManager
 import org.locationtech.jts.geom.Geometry
@@ -22,4 +22,3 @@ data class SpatialContext(
     val referenceGeometry: Geometry,
     val radiusMeters: Double = 0.0
 )
-

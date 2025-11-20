@@ -4,7 +4,7 @@ import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Root
 import jakarta.persistence.criteria.Selection
-import org.gonexar.data.model.SpatialContext
+import org.gonexar.spatial.SpatialContext
 import org.locationtech.jts.geom.Geometry
 
 /**
