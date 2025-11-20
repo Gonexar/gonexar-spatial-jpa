@@ -4,8 +4,8 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Predicate
 import org.gonexar.criteria.GonexarSpatial
-import org.gonexar.dto.DataResult
-import org.gonexar.dto.RouteProximityResult
+import org.gonexar.data.dto.DataResult
+import org.gonexar.data.dto.RouteProximityResult
 import org.locationtech.jts.geom.Geometry
 
 object GonexarSpatialFunction {

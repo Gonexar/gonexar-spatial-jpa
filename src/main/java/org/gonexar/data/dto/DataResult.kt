@@ -1,4 +1,4 @@
-package org.gonexar.dto
+package org.gonexar.data.dto
 
 data class DataResult(
     val distance: Double,
