@@ -1,5 +1,8 @@
 package org.gonexar.dialect
 
+import org.gonexar.type.Raster
+import org.gonexar.type.RasterJavaType
+import org.gonexar.type.RasterType
 import org.hibernate.boot.model.FunctionContributions
 import org.hibernate.boot.model.TypeContributions
 import org.hibernate.dialect.PostgreSQLDialect
@@ -27,11 +30,19 @@ class GonexarPostgisDialect : PostgreSQLDialect() {
         // 1) registre JavaType e JdbcType (se ainda não fez)
         javaRegistry.addDescriptor(JTSGeometryJavaType.GEOMETRY_INSTANCE)
         jdbcRegistry.addDescriptor(PGGeometryJdbcType.INSTANCE_WKB_2)
+        // --- 2. REGISTRO DO TIPO RASTER CUSTOMIZADO (CRUCIAL) ---
+
+        // A. Adiciona o JavaTypeDescriptor (Opcional, mas boa prática)
+        javaRegistry.addDescriptor(RasterJavaType) // Assumindo que RasterJavaType tem uma instância singleton
+
+        // B. Adiciona o BasicType (Obrigatório para ser mapeado)
+        // O BasicType contém a lógica de mapeamento para o SQL (o Extractor/Binder).
+        typeContributions.contributeType(RasterType)
     }
 
     override fun initializeFunctionRegistry(functionContributions: FunctionContributions) {
         super.initializeFunctionRegistry(functionContributions)
-        val registry = functionContributions.functionRegistry
+        val f = functionContributions.functionRegistry
 
         // IMPORTANT: obtenha a referência ao BasicType a partir do basicTypeRegistry
         // Resolve um BasicTypeReference<Geometry> baseado no Java class Geometry
@@ -43,76 +54,91 @@ class GonexarPostgisDialect : PostgreSQLDialect() {
             SqlTypes.GEOMETRY
         )
 
-        registry.registerPattern(
-            "ST_ClosestPoint",
-            "ST_ClosestPoint(?1, ?2)"
+        val rasterTypeReference: BasicTypeReference<Raster> = BasicTypeReference(
+            "raster",
+            // 1. Sua classe Java/Kotlin: O objeto que o Hibernate manipula
+            Raster::class.java,
+            // 2. O código JDBC: VARBINARY é o mais apropriado para dados binários complexos (BLOB/RASTER)
+            SqlTypes.VARBINARY // Ou java.sql.Types.VARBINARY
         )
 
-        registry.register(
-            "GREATEST",
-            StandardSQLFunction(
-                "GREATEST",
-                StandardBasicTypes.DOUBLE
-            )
-        )
-        registry.register(
-            "LEAST",
-            StandardSQLFunction(
-                "LEAST",
-                StandardBasicTypes.DOUBLE
-            )
-        )
+        // ============================
+        // GEOMETRIA BÁSICA
+        // ============================
+        f.register("ST_GeometryType", StandardSQLFunction("ST_GeometryType", basicTypeReference))
+        f.register("ST_Dimension", StandardSQLFunction("ST_Dimension", basicTypeReference))
+        f.register("ST_Envelope", StandardSQLFunction("ST_Envelope", basicTypeReference))
+        f.register("ST_Boundary", StandardSQLFunction("ST_Boundary", basicTypeReference))
+        f.register("ST_Buffer", StandardSQLFunction("ST_Buffer", basicTypeReference))
+        f.register("ST_Simplify", StandardSQLFunction("ST_Simplify", basicTypeReference))
+        f.register("ST_Transform", StandardSQLFunction("ST_Transform", basicTypeReference))
+        f.register("ST_SetSRID", StandardSQLFunction("ST_SetSRID", basicTypeReference))
 
-        registry.register(
-            "ST_Azimuth",
-            StandardSQLFunction(
-                "ST_Azimuth",
-                StandardBasicTypes.DOUBLE
-            )
-        )
+        // ============================
+        // RELACIONAIS (TOPOLOGIA)
+        // ============================
+        f.register("ST_Intersects", StandardSQLFunction("ST_Intersects", StandardBasicTypes.BOOLEAN))
+        f.register("ST_Contains", StandardSQLFunction("ST_Contains", StandardBasicTypes.BOOLEAN))
+        f.register("ST_Within", StandardSQLFunction("ST_Within", StandardBasicTypes.BOOLEAN))
+        f.register("ST_Covers", StandardSQLFunction("ST_Covers", StandardBasicTypes.BOOLEAN))
+        f.register("ST_CoveredBy", StandardSQLFunction("ST_CoveredBy", StandardBasicTypes.BOOLEAN))
+        f.register("ST_Touches", StandardSQLFunction("ST_Touches", StandardBasicTypes.BOOLEAN))
+        f.register("ST_Crosses", StandardSQLFunction("ST_Crosses", StandardBasicTypes.BOOLEAN))
+        f.register("ST_Overlaps", StandardSQLFunction("ST_Overlaps", StandardBasicTypes.BOOLEAN))
+        f.register("ST_DWithin", StandardSQLFunction("ST_DWithin", StandardBasicTypes.BOOLEAN))
 
-        registry.register(
-            "ST_LineSubstring",
-            StandardSQLFunction(
-                "ST_LineSubstring",
-                basicTypeReference
-            )
-        )
+        // ============================
+        // MÉTRICAS
+        // ============================
+        f.register("ST_Distance", StandardSQLFunction("ST_Distance", StandardBasicTypes.DOUBLE))
+        f.register("ST_Length", StandardSQLFunction("ST_Length", StandardBasicTypes.DOUBLE))
+        f.register("geography", StandardSQLFunction("geography")) // cast
+        f.register("ST_Area", StandardSQLFunction("ST_Area", StandardBasicTypes.DOUBLE))
+        f.register("ST_MaxDistance", StandardSQLFunction("ST_MaxDistance", StandardBasicTypes.DOUBLE))
+        f.register("ST_HausdorffDistance", StandardSQLFunction("ST_HausdorffDistance", StandardBasicTypes.DOUBLE))
 
-        registry.register(
-            "ST_DWithin",
-            StandardSQLFunction("ST_DWithin", StandardBasicTypes.BOOLEAN)
-        )
+        // ============================
+        // LINHAS / ROTAS
+        // ============================
+        f.register("ST_LineInterpolatePoint", StandardSQLFunction("ST_LineInterpolatePoint", basicTypeReference))
+        f.register("ST_LineSubstring", StandardSQLFunction("ST_LineSubstring", basicTypeReference))
+        f.register("ST_LineLocatePoint", StandardSQLFunction("ST_LineLocatePoint", StandardBasicTypes.DOUBLE))
+        f.register("ST_StartPoint", StandardSQLFunction("ST_StartPoint", basicTypeReference))
+        f.register("ST_EndPoint", StandardSQLFunction("ST_EndPoint", basicTypeReference))
+        f.register("ST_ClosestPoint", StandardSQLFunction("ST_ClosestPoint", basicTypeReference))
+        f.register("ST_Azimuth", StandardSQLFunction("ST_Azimuth", StandardBasicTypes.DOUBLE))
+        f.register("ST_LineMerge", StandardSQLFunction("ST_LineMerge", basicTypeReference))
 
-        registry.register(
-            "ST_Distance",
-            StandardSQLFunction("ST_Distance", StandardBasicTypes.DOUBLE)
-        )
+        // ============================
+        // COMBINAÇÃO DE GEOMETRIAS
+        // ============================
+        f.register("ST_Intersection", StandardSQLFunction("ST_Intersection", basicTypeReference))
+        f.register("ST_Union", StandardSQLFunction("ST_Union", basicTypeReference))
+        f.register("ST_Difference", StandardSQLFunction("ST_Difference", basicTypeReference))
+        f.register("ST_SymDifference", StandardSQLFunction("ST_SymDifference", basicTypeReference))
+        f.register("ST_Collect", StandardSQLFunction("ST_Collect", basicTypeReference))
 
-        registry.register(
-            "ST_Contains",
-            StandardSQLFunction("ST_Contains", StandardBasicTypes.BOOLEAN)
-        )
+        // ============================
+        // RASTER (super importante)
+        // ============================
+        f.register("ST_Value", StandardSQLFunction("ST_Value", StandardBasicTypes.DOUBLE))
+        f.register("ST_NearestValue", StandardSQLFunction("ST_NearestValue", StandardBasicTypes.DOUBLE))
+        f.register("ST_Clip", StandardSQLFunction("ST_Clip", rasterTypeReference))
+        f.register("ST_SummaryStats", StandardSQLFunction("ST_SummaryStats", StandardBasicTypes.STRING)) // retorna record
+        f.register("ST_SummaryStatsAgg", StandardSQLFunction("ST_SummaryStatsAgg", StandardBasicTypes.STRING))
+        f.register("ST_MapAlgebraExpr", StandardSQLFunction("ST_MapAlgebraExpr", rasterTypeReference))
+        f.register("ST_Reclass", StandardSQLFunction("ST_Reclass", rasterTypeReference))
+        f.register("ST_Normalize", StandardSQLFunction("ST_Normalize", rasterTypeReference))
+        f.register("ST_Slope", StandardSQLFunction("ST_Slope", rasterTypeReference))
+        f.register("ST_Aspect", StandardSQLFunction("ST_Aspect", rasterTypeReference))
 
-        registry.register(
-            "ST_Intersects",
-            StandardSQLFunction("ST_Intersects", StandardBasicTypes.BOOLEAN)
-        )
-
-        registry.register(
-            "ST_AsText",
-            StandardSQLFunction("ST_AsText", StandardBasicTypes.STRING)
-        )
-
-        registry.register(
-            "ST_IsValid",
-            StandardSQLFunction("ST_IsValid", StandardBasicTypes.BOOLEAN)
-        )
-
-        registry.register(
-            "ST_IsValidDetail",
-            StandardSQLFunction("ST_IsValidDetail", StandardBasicTypes.STRING)
-        )
+        // ============================
+        // OUTROS
+        // ============================
+        f.register("ST_AsText", StandardSQLFunction("ST_AsText", StandardBasicTypes.STRING))
+        f.register("ST_AsGeoJSON", StandardSQLFunction("ST_AsGeoJSON", StandardBasicTypes.STRING))
+        f.register("ST_AsBinary", StandardSQLFunction("ST_AsBinary"))
+        f.register("ST_IsValid", StandardSQLFunction("ST_IsValid", StandardBasicTypes.BOOLEAN))
     }
 
 }

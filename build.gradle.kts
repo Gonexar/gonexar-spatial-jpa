@@ -30,7 +30,7 @@ dependencies {
     api("net.postgis:postgis-jdbc:2.5.0")
     api("org.postgresql:postgresql:42.7.7")
     // Hibernate Core
-    api("org.hibernate.orm:hibernate-core:6.4.1.Final")
+    implementation("org.hibernate.orm:hibernate-core:6.4.1.Final")
     api("org.hibernate.orm:hibernate-spatial:6.4.1.Final")
     // Jackson
     api("com.fasterxml.jackson.core:jackson-databind:2.15.2")

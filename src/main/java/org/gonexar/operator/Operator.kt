@@ -3,44 +3,113 @@ package org.gonexar.operator
 import jakarta.persistence.criteria.Expression
 import org.gonexar.spatial.SpatialDslContext
 import org.gonexar.spatial.SpatialExpr
+import org.gonexar.type.Raster
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
+
 
 /**
- * ST_Buffer(geom, distance)
+ * ST_Contains(a, b)  -> true if a contains b
  */
-fun SpatialExpr<Geometry>.buffer(
+fun SpatialExpr<Geometry>.contains(
     dsl: SpatialDslContext<*>,
-    distance: Double,
-    alias: String? = null
-): SpatialExpr<Geometry> {
-    val name = alias ?: "${this.name}_buffer_${distance.toString().replace('.', '_')}"
-    val cb = dsl.cb
-    val buffered: Expression<Geometry> = cb.function("ST_Buffer", Geometry::class.java, this.expr, cb.literal(distance))
-    return dsl.register(name, buffered)
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_contains_${other.name}"
+): SpatialExpr<Boolean> {
+    val expr = dsl.cb.function("ST_Contains", Boolean::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
 }
 
 /**
- * ST_Clip(rast, geom)
+ * ST_Within(a, b) -> true if a is within b
  */
-fun SpatialExpr<Any>.clip(
+fun SpatialExpr<Geometry>.within(
     dsl: SpatialDslContext<*>,
-    geom: SpatialExpr<Geometry>,
-    alias: String? = null
-): SpatialExpr<Any> {
-    val name = alias ?: "${this.name}_clip_${geom.name}"
-    val cb = dsl.cb
-    val clipExpr: Expression<Any> = cb.function("ST_Clip", Any::class.java, this.expr, geom.expr)
-    return dsl.register(name, clipExpr)
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_within_${other.name}"
+): SpatialExpr<Boolean> {
+    val expr = dsl.cb.function("ST_Within", Boolean::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
 }
 
 /**
- * ST_SummaryStats(raster)  -> returns a composite; we keep it as Any
+ * ST_Touches(a, b)
  */
-fun SpatialExpr<Any>.summaryStats(dsl: SpatialDslContext<*>, alias: String? = null): SpatialExpr<Any> {
-    val name = alias ?: "${this.name}_stats"
-    val cb = dsl.cb
-    val statsExpr: Expression<Any> = cb.function("ST_SummaryStats", Any::class.java, this.expr)
-    return dsl.register(name, statsExpr)
+fun SpatialExpr<Geometry>.touches(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_touches_${other.name}"
+): SpatialExpr<Boolean> {
+    val expr = dsl.cb.function("ST_Touches", Boolean::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_Crosses(a, b)
+ */
+fun SpatialExpr<Geometry>.crosses(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_crosses_${other.name}"
+): SpatialExpr<Boolean> {
+    val expr = dsl.cb.function("ST_Crosses", Boolean::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_Overlaps(a, b)
+ */
+fun SpatialExpr<Geometry>.overlaps(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_overlaps_${other.name}"
+): SpatialExpr<Boolean> {
+    val expr = dsl.cb.function("ST_Overlaps", Boolean::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_Covers(a, b)
+ */
+fun SpatialExpr<Geometry>.covers(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_covers_${other.name}"
+): SpatialExpr<Boolean> {
+    val expr = dsl.cb.function("ST_Covers", Boolean::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_CoveredBy(a, b)
+ */
+fun SpatialExpr<Geometry>.coveredBy(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_coveredby_${other.name}"
+): SpatialExpr<Boolean> {
+    val expr = dsl.cb.function("ST_CoveredBy", Boolean::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_DWithin(a, b, radius)
+ *
+ * If useGeography = true, wraps both expressions with geography(), making distance computed in meters.
+ */
+fun SpatialExpr<Geometry>.dWithin(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    radius: Double,
+    useGeography: Boolean = false,
+    alias: String = "${this.name}_dwithin_${radius}_of_${other.name}"
+): SpatialExpr<Boolean> {
+    val aExpr = if (useGeography) this.asGeography(dsl).expr else this.expr
+    val bExpr = if (useGeography) other.asGeography(dsl).expr else other.expr
+
+    val expr = dsl.cb.function("ST_DWithin", Boolean::class.java, aExpr, bExpr, dsl.cb.literal(radius))
+    return dsl.register(alias, expr)
 }
 
 /**
@@ -53,10 +122,103 @@ fun SpatialExpr<Any>.slope(dsl: SpatialDslContext<*>, alias: String? = null): Sp
     return dsl.register(name, slopeExpr)
 }
 
-/* ===========================
-   WHERE / FILTER HELPERS
-   =========================== */
+/* ============================
+   GEOMETRY / NUMERIC OPERATORS
+   ============================ */
 
+fun SpatialExpr<Any>.distanceTo(
+    dsl: SpatialDslContext<*>,
+    otherGeog: SpatialExpr<Any>,
+    alias: String = "${this.name}_dist_${otherGeog.name}"
+): SpatialExpr<Double> {
+    val expr = dsl.cb.function(
+        "ST_Distance",
+        Double::class.java,
+        this.expr,
+        otherGeog.expr
+    )
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_Distance(a, b)
+ *
+ * If useGeography = true -> uses geography() for meters measure.
+ */
+fun SpatialExpr<Geometry>.distance(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    useGeography: Boolean = false,
+    alias: String = "${this.name}_dist_${other.name}"
+): SpatialExpr<Double> {
+    val aExpr = if (useGeography) this.asGeography(dsl).expr else this.expr
+    val bExpr = if (useGeography) other.asGeography(dsl).expr else other.expr
+
+    val expr = dsl.cb.function("ST_Distance", Double::class.java, aExpr, bExpr)
+    // JPA providers sometimes return Expression<Number> for arithmetic functions; ensure Double via toDouble
+    val asDouble = dsl.cb.toDouble(expr)
+    return dsl.register(alias, asDouble)
+}
+
+/**
+ * ST_Buffer(geom, distance)
+ */
+fun SpatialExpr<Geometry>.buffer(
+    dsl: SpatialDslContext<*>,
+    distance: Double,
+    alias: String = "${this.name}_buffer_${distance.toString().replace('.', '_')}"
+): SpatialExpr<Geometry> {
+    val expr = dsl.cb.function("ST_Buffer", Geometry::class.java, this.expr, dsl.cb.literal(distance))
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_Union(a, b)
+ */
+fun SpatialExpr<Geometry>.union(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_union_${other.name}"
+): SpatialExpr<Geometry> {
+    val expr = dsl.cb.function("ST_Union", Geometry::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_Intersection(a, b)
+ */
+fun SpatialExpr<Geometry>.intersection(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_intersection_${other.name}"
+): SpatialExpr<Geometry> {
+    val expr = dsl.cb.function("ST_Intersection", Geometry::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_Difference(a, b)
+ */
+fun SpatialExpr<Geometry>.difference(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_difference_${other.name}"
+): SpatialExpr<Geometry> {
+    val expr = dsl.cb.function("ST_Difference", Geometry::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
+
+/**
+ * ST_SymDifference(a, b)  (symmetric difference)
+ */
+fun SpatialExpr<Geometry>.symDifference(
+    dsl: SpatialDslContext<*>,
+    other: SpatialExpr<Geometry>,
+    alias: String = "${this.name}_symdiff_${other.name}"
+): SpatialExpr<Geometry> {
+    val expr = dsl.cb.function("ST_SymDifference", Geometry::class.java, this.expr, other.expr)
+    return dsl.register(alias, expr)
+}
 /**
  * Adds ST_Intersects(entity.geom, geom) predicate to the context.
  * entityGeomFieldName: name of geometry column in entity
@@ -86,21 +248,6 @@ fun SpatialExpr<Geometry>.asGeography(
     alias: String = "${this.name}_geog"
 ): SpatialExpr<Any> {
     val expr = dsl.cb.function("geography", Any::class.java, this.expr)
-    return dsl.register(alias, expr)
-}
-
-
-fun SpatialExpr<Any>.distanceTo(
-    dsl: SpatialDslContext<*>,
-    otherGeog: SpatialExpr<Any>,
-    alias: String = "${this.name}_dist_${otherGeog.name}"
-): SpatialExpr<Double> {
-    val expr = dsl.cb.function(
-        "ST_Distance",
-        Double::class.java,
-        this.expr,
-        otherGeog.expr
-    )
     return dsl.register(alias, expr)
 }
 
@@ -174,6 +321,67 @@ fun percentageInside(
     return dsl.register(alias, asDouble)
 }
 
+fun SpatialExpr<Geometry>.interpolatePoint(
+    dsl: SpatialDslContext<*>,
+    fraction: Double,
+    alias: String = "${this.name}_pt_${fraction}"
+): SpatialExpr<Geometry> {
+
+    val expr = dsl.cb.function(
+        "ST_LineInterpolatePoint",
+        Geometry::class.java,
+        this.expr,
+        dsl.cb.literal(fraction)
+    )
+
+    return dsl.register(alias, expr)
+}
+
+fun SpatialDslContext<*>.stSetSrid(
+    geom: SpatialExpr<Geometry>,
+    srid: Int,
+    alias: String = "${geom.name}_srid_$srid"
+): SpatialExpr<Geometry> {
+
+    val expr = cb.function(
+        "ST_SetSRID",
+        Geometry::class.java,
+        geom.expr,
+        cb.literal(srid)
+    )
+
+    return register(alias, expr)
+}
+
+fun SpatialDslContext<*>.stValue(
+    raster: SpatialExpr<Raster>,
+    geom: SpatialExpr<Geometry>,
+    alias: String = "st_value_${raster.name}_${geom.name}"
+): SpatialExpr<Double?> {
+
+    val expr = cb.function(
+        "ST_Value",
+        Double::class.java,
+        raster.expr,
+        geom.expr
+    )
+
+    return register(alias, expr)
+}
+
+fun SpatialDslContext<*>.literalPoint(
+    coordinate: Coordinate,
+    srid: Int = 4326
+): SpatialExpr<Geometry> {
+    val gf = GeometryFactory()
+    val point = gf.createPoint(coordinate);
+    point.srid = srid
+
+    @Suppress("UNCHECKED_CAST")
+    val expr = cb.literal(point) as Expression<Geometry>
+
+    return register("literal_point_${coordinate.x}_${coordinate.y}", expr)
+}
 
 fun bearingAlongRoute(
     dsl: SpatialDslContext<*>,
@@ -191,12 +399,14 @@ fun bearingAlongRoute(
         closestPoint.expr
     )
 
-    val startFrac = cb.function("GREATEST", Double::class.java,
+    val startFrac = cb.function(
+        "GREATEST", Double::class.java,
         cb.diff(locate, cb.literal(0.0001)),
         cb.literal(0.0)
     )
 
-    val endFrac = cb.function("LEAST", Double::class.java,
+    val endFrac = cb.function(
+        "LEAST", Double::class.java,
         cb.sum(locate, cb.literal(0.0001)),
         cb.literal(1.0)
     )

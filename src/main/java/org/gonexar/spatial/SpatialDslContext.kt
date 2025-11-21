@@ -4,6 +4,7 @@ import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Root
 import jakarta.persistence.criteria.Selection
+import org.gonexar.type.Raster
 import org.locationtech.jts.geom.Geometry
 
 /**
@@ -61,11 +62,11 @@ class SpatialDslContext<R : Any>(
      * Returns a raster column (PostGIS raster) from the entity root.
      * The column is registered as an Expression inside the context.
      */
-    fun raster(fieldName: String): SpatialExpr<Any> {
+    fun raster(fieldName: String): SpatialExpr<Raster> {
         val alias = "raster_$fieldName"
         if (!ctx.containsExpression(alias)) {
             @Suppress("UNCHECKED_CAST")
-            val path = root.get<Any>(fieldName) as Expression<Any>
+            val path = root.get<Any>(fieldName) as Expression<Raster>
             register(alias, path)
         }
         return expr(alias)
