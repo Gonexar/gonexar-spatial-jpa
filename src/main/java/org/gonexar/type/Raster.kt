@@ -1,23 +1,23 @@
 package org.gonexar.type
 
-interface RasterInterface {
-    val bytes: ByteArray
-}
-
 data class Raster(
-    override val bytes: ByteArray
-) : RasterInterface {
-
+    // O conteúdo binário (o dado rasterizado em si)
+    val bytes: ByteArray,
+    // (Opcional) Metadados geográficos essenciais para a interpretação
+    val srid: Int? = null
+) {
+    // Implementações cruciais para o Hibernate (caching e dirty checking)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-
         other as Raster
-
-        return bytes.contentEquals(other.bytes)
+        // Compara o conteúdo do array de bytes
+        return bytes.contentEquals(other.bytes) && srid == other.srid
     }
 
     override fun hashCode(): Int {
-        return bytes.contentHashCode()
+        var result = bytes.contentHashCode()
+        result = 31 * result + (srid ?: 0)
+        return result
     }
 }

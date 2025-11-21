@@ -2,7 +2,7 @@ package org.gonexar.dialect
 
 import org.gonexar.type.Raster
 import org.gonexar.type.RasterJavaType
-import org.gonexar.type.RasterType
+import org.gonexar.type.RasterUserType
 import org.hibernate.boot.model.FunctionContributions
 import org.hibernate.boot.model.TypeContributions
 import org.hibernate.dialect.PostgreSQLDialect
@@ -33,11 +33,16 @@ class GonexarPostgisDialect : PostgreSQLDialect() {
         // --- 2. REGISTRO DO TIPO RASTER CUSTOMIZADO (CRUCIAL) ---
 
         // A. Adiciona o JavaTypeDescriptor (Opcional, mas boa prática)
-        javaRegistry.addDescriptor(RasterJavaType) // Assumindo que RasterJavaType tem uma instância singleton
+        javaRegistry.addDescriptor(RasterJavaType)
+        typeContributions.contributeType(RasterUserType, "raster")
 
         // B. Adiciona o BasicType (Obrigatório para ser mapeado)
         // O BasicType contém a lógica de mapeamento para o SQL (o Extractor/Binder).
-        typeContributions.contributeType(RasterType)
+        val rasterTypeReference: BasicTypeReference<Raster> = BasicTypeReference(
+            "raster", // O nome registrado (RasterType.getName())
+            Raster::class.java, // A classe Java/Kotlin
+            SqlTypes.VARBINARY // O tipo JDBC subjacente
+        )
     }
 
     override fun initializeFunctionRegistry(functionContributions: FunctionContributions) {

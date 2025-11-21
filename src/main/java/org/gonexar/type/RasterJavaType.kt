@@ -8,6 +8,8 @@ object RasterJavaType : AbstractJavaType<Raster>(Raster::class.java) {
 
     private fun readResolve(): Any = RasterJavaType
 
+    val INSTANCE: RasterJavaType = this
+
     override fun areEqual(one: Raster?, another: Raster?): Boolean {
         if (one === another) return true
         if (one == null || another == null) return false
@@ -45,7 +47,7 @@ object RasterJavaType : AbstractJavaType<Raster>(Raster::class.java) {
         // Converte Blob -> Raster (opcional)
         // if (value is Blob) { return Raster(value.getBytes(1, value.length().toInt())) }
 
-        throw UnknownUnwrapTypeException(value.javaClass) as Throwable
+        throw UnknownUnwrapTypeException(value.javaClass)
     }
 
     override fun extractHashCode(value: Raster?): Int {
