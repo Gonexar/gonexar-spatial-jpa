@@ -25,8 +25,9 @@ object RasterJavaType : AbstractJavaType<Raster>(Raster::class.java) {
         if (value == null) return null
 
         // Converte Raster -> byte[]
-        if (ByteArray::class.java.isAssignableFrom(type)) {
-            return value.bytes as X
+        if (type == ByteArray::class.java) {
+            @Suppress("UNCHECKED_CAST")
+            return value.bytes as X?
         }
         // Converte Raster -> Blob (opcional)
         // if (Blob::class.java.isAssignableFrom(type)) { ... }

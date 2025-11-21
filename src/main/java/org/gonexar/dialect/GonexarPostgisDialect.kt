@@ -27,32 +27,17 @@ class GonexarPostgisDialect : PostgreSQLDialect() {
         val javaRegistry = typeConfig.javaTypeRegistry
         val jdbcRegistry = typeConfig.jdbcTypeRegistry
 
-        // 1) registre JavaType e JdbcType (se ainda não fez)
         javaRegistry.addDescriptor(JTSGeometryJavaType.GEOMETRY_INSTANCE)
         jdbcRegistry.addDescriptor(PGGeometryJdbcType.INSTANCE_WKB_2)
-        // --- 2. REGISTRO DO TIPO RASTER CUSTOMIZADO (CRUCIAL) ---
 
-        // A. Adiciona o JavaTypeDescriptor (Opcional, mas boa prática)
         javaRegistry.addDescriptor(RasterJavaType)
-        typeContributions.contributeType(RasterUserType, "raster")
-
-        // B. Adiciona o BasicType (Obrigatório para ser mapeado)
-        // O BasicType contém a lógica de mapeamento para o SQL (o Extractor/Binder).
-        val rasterTypeReference: BasicTypeReference<Raster> = BasicTypeReference(
-            "raster", // O nome registrado (RasterType.getName())
-            Raster::class.java, // A classe Java/Kotlin
-            SqlTypes.VARBINARY // O tipo JDBC subjacente
-        )
+        typeContributions.contributeType(RasterUserType)
     }
 
     override fun initializeFunctionRegistry(functionContributions: FunctionContributions) {
         super.initializeFunctionRegistry(functionContributions)
         val f = functionContributions.functionRegistry
 
-        // IMPORTANT: obtenha a referência ao BasicType a partir do basicTypeRegistry
-        // Resolve um BasicTypeReference<Geometry> baseado no Java class Geometry
-        // RESOLVE O TIPO GEOMETRY
-        //val geometryTypeRef = basic.getRegisteredType<GeometryBasicType>("geometry")
         val basicTypeReference = BasicTypeReference(
             "geometry",
             Geometry::class.java,
@@ -61,10 +46,8 @@ class GonexarPostgisDialect : PostgreSQLDialect() {
 
         val rasterTypeReference: BasicTypeReference<Raster> = BasicTypeReference(
             "raster",
-            // 1. Sua classe Java/Kotlin: O objeto que o Hibernate manipula
             Raster::class.java,
-            // 2. O código JDBC: VARBINARY é o mais apropriado para dados binários complexos (BLOB/RASTER)
-            SqlTypes.VARBINARY // Ou java.sql.Types.VARBINARY
+            SqlTypes.VARBINARY
         )
 
         // ============================
