@@ -5,6 +5,9 @@ import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import jakarta.persistence.criteria.Selection
+import org.gonexar.expression.NumericExpr
+import org.gonexar.expression.SpatialExpr
+import org.locationtech.jts.geom.Geometry
 
 /**
  * Internal execution context for the spatial analysis DSL.
@@ -72,4 +75,5 @@ class CriteriaContext<T : Any>(
      */
     fun projection(): Selection<T> =
         _projection ?: throw IllegalStateException("Projection not defined")
+
 }

@@ -1,8 +1,19 @@
 package org.gonexar.operator
 
 import org.gonexar.spatial.SpatialDslContext
-import org.gonexar.spatial.SpatialExpr
+import org.gonexar.expression.SpatialExpr
 import org.locationtech.jts.geom.Geometry
+
+fun SpatialExpr<Geometry>.stAsText(
+    dsl: SpatialDslContext<*>,
+    alias: String = "${name}_astxt"
+): SpatialExpr<String> =
+    dsl.register(
+        alias, dsl.cb.function(
+            "ST_AsText",
+            String::class.java, expr
+        )
+    )
 
 fun SpatialExpr<Geometry>.stGeometryType(
     dsl: SpatialDslContext<*>,

@@ -1,4 +1,4 @@
-package org.gonexar.spatial
+package org.gonexar.expression
 
 import jakarta.persistence.criteria.Expression
 

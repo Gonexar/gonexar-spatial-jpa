@@ -2,7 +2,7 @@ package org.gonexar.operator
 
 import jakarta.persistence.criteria.Expression
 import org.gonexar.spatial.SpatialDslContext
-import org.gonexar.spatial.SpatialExpr
+import org.gonexar.expression.SpatialExpr
 import org.gonexar.type.Raster
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry

@@ -1,7 +1,7 @@
 package org.gonexar.operator
 
 import org.gonexar.spatial.SpatialDslContext
-import org.gonexar.spatial.SpatialExpr
+import org.gonexar.expression.SpatialExpr
 import org.gonexar.type.Raster
 import org.gonexar.type.RasterStatsExpr
 import org.locationtech.jts.geom.Geometry
@@ -32,6 +32,7 @@ fun SpatialExpr<Raster>.stSummaryStats(
     val mean  = dsl.register("${alias}_mean",  dsl.cb.function("st_column", Double::class.java, stats, dsl.cb.literal(3)))
     val std   = dsl.register("${alias}_std",   dsl.cb.function("st_column", Double::class.java, stats, dsl.cb.literal(4)))
     val count = dsl.register("${alias}_count", dsl.cb.function("st_column", Long::class.java,   stats, dsl.cb.literal(5)))
+    val sum = dsl.register("${alias}_sum", dsl.cb.function("st_column", Double::class.java,   stats, dsl.cb.literal(6)))
 
-    return RasterStatsExpr(min, max, mean, std, count)
+    return RasterStatsExpr(min, max, mean, std, count, sum)
 }

@@ -1,7 +1,7 @@
 package org.gonexar.operator
 
 import org.gonexar.spatial.SpatialDslContext
-import org.gonexar.spatial.SpatialExpr
+import org.gonexar.expression.SpatialExpr
 import org.locationtech.jts.geom.Geometry
 
 fun SpatialExpr<Geometry>.stIntersects(
