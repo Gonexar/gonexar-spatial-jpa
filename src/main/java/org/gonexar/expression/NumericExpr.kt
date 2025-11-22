@@ -1,7 +1,6 @@
 package org.gonexar.expression
 
 import jakarta.persistence.criteria.Expression
-import org.gonexar.spatial.SpatialDslContext
 
 /**
  * Representa uma expressão numérica em consultas espaciais.
