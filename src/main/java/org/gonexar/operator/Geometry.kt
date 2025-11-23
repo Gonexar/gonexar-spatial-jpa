@@ -91,6 +91,17 @@ fun SpatialExpr<Geometry>.stSimplify(
         )
     )
 
+fun inputGeom(
+    dsl: SpatialDslContext<*>,
+    geometry: Geometry,
+): SpatialExpr<Geometry> {
+    val alias = "input_geom"
+    return dsl.register(
+        alias,
+        dsl.cb.literal(geometry)
+    )
+}
+
 fun SpatialExpr<Geometry>.stTransform(
     dsl: SpatialDslContext<*>,
     srid: Int,

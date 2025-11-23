@@ -126,7 +126,7 @@ fun SpatialExpr<Any>.slope(dsl: SpatialDslContext<*>, alias: String? = null): Sp
    GEOMETRY / NUMERIC OPERATORS
    ============================ */
 
-fun SpatialExpr<Any>.distanceTo(
+fun SpatialExpr<Geometry>.distanceTo(
     dsl: SpatialDslContext<*>,
     otherGeog: SpatialExpr<Any>,
     alias: String = "${this.name}_dist_${otherGeog.name}"

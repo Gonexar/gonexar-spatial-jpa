@@ -1,20 +1,13 @@
 package org.gonexar.spatial
 
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.Expression
-import jakarta.persistence.criteria.Root
-import jakarta.persistence.criteria.Selection
+import jakarta.persistence.criteria.*
+import org.gonexar.expression.NumericExpr
 import org.gonexar.expression.SpatialExpr
 import org.gonexar.type.Raster
 import org.locationtech.jts.geom.Geometry
 
 /**
  * High-level DSL context where spatial operations are written.
- *
- * This is the main interface exposed to developers. All DSL features
- * — such as buffer(), clip(), slope(), summaryStats() — operate on
- * SpatialDslContext.
- *
  * Responsibilities:
  *  - Provide access to CriteriaBuilder and Root
  *  - Register expressions inside CriteriaContext
@@ -23,8 +16,9 @@ import org.locationtech.jts.geom.Geometry
  */
 class SpatialDslContext<R : Any>(
     val ctx: CriteriaContext<R>,
-    val spatial: SpatialContext
 ) {
+    private val dsl = this
+
     /** Shortcut to CriteriaBuilder from context. */
     val cb: CriteriaBuilder get() = ctx.cb
 
@@ -45,19 +39,6 @@ class SpatialDslContext<R : Any>(
      */
     fun <T> expr(name: String): SpatialExpr<T> =
         SpatialExpr(name, ctx.getExpression(name))
-
-    /**
-     * Returns the reference geometry as a SpatialExpr,
-     * registering it only once under the alias "input_geom".
-     */
-    fun inputGeom(): SpatialExpr<Geometry> {
-        val alias = "input_geom"
-        if (!ctx.containsExpression(alias)) {
-            val literal = cb.literal(spatial.referenceGeometry)
-            register(alias, literal)
-        }
-        return expr(alias)
-    }
 
     /**
      * Returns a raster column (PostGIS raster) from the entity root.
@@ -86,6 +67,10 @@ class SpatialDslContext<R : Any>(
         return expr(alias)
     }
 
+    fun <T> Path<T>.criteriaBuilder(): CriteriaBuilder {
+        return cb
+    }
+
     /**
      * Defines the final SELECT projection of the query.
      * This is typically a CriteriaBuilder.construct(...)
@@ -93,5 +78,76 @@ class SpatialDslContext<R : Any>(
      */
     fun resultProjection(selection: Selection<R>) {
         ctx.setProjection(selection)
+    }
+
+    fun where(predicate: Predicate) {
+        ctx.addPredicate(predicate)
+    }
+
+    fun where(block: (root: Root<*>, cb: CriteriaBuilder) -> Predicate) {
+        val p = block(root, cb)
+        ctx.addPredicate(p)
+    }
+
+    fun SpatialExpr<Boolean>.asPredicate(): Predicate =
+        cb.isTrue(this.expr)
+
+    fun <T> whereEq(path: Path<T>, value: T) {
+        val pred = cb.equal(path, value)
+        ctx.addPredicate(pred)
+    }
+
+    fun <T> whereNeq(path: Path<T>, value: T) {
+        val pred = cb.notEqual(path, value)
+        ctx.addPredicate(pred)
+    }
+
+    fun <N : Number> whereGt(path: Path<N>, value: N) {
+        val pred = cb.gt(path as Expression<out Number>, value)
+        ctx.addPredicate(pred)
+    }
+
+    fun <N : Number> whereGte(path: Path<N>, value: N) {
+        val pred = cb.ge(path as Expression<out Number>, value)
+        ctx.addPredicate(pred)
+    }
+
+    fun <N : Number> whereLt(path: Path<N>, value: N) {
+        val pred = cb.lt(path as Expression<out Number>, value)
+        ctx.addPredicate(pred)
+    }
+
+    fun <N : Number> whereLte(path: Path<N>, value: N) {
+        val pred = cb.le(path as Expression<out Number>, value)
+        ctx.addPredicate(pred)
+    }
+
+    // INFIX FLUENT OPERATORS
+    infix fun <T> Path<T>.eq(value: T): Predicate =
+        cb.equal(this, value)
+
+    infix fun <T> Path<T>.neq(value: T): Predicate =
+        cb.notEqual(this, value)
+
+    infix fun <N : Number> Path<N>.gt(value: N): Predicate =
+        cb.gt(this as Expression<out Number>, value)
+
+    infix fun <N : Number> Path<N>.gte(value: N): Predicate =
+        cb.ge(this as Expression<out Number>, value)
+
+    infix fun <N : Number> Path<N>.lt(value: N): Predicate =
+        cb.lt(this as Expression<out Number>, value)
+
+    infix fun <N : Number> Path<N>.lte(value: N): Predicate =
+        cb.le(this as Expression<out Number>, value)
+
+    fun literal(value: Int): NumericExpr<Int> =
+        NumericExpr("lit_$value", cb.literal(value))
+
+    fun literal(value: Double): NumericExpr<Double> =
+        NumericExpr("lit_$value", cb.literal(value))
+
+    fun SpatialExpr<Boolean>.toPredicate(): Predicate {
+        return dsl.cb.isTrue(this.expr)
     }
 }

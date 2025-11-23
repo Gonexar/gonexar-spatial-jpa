@@ -1,7 +1,6 @@
 package org.gonexar.spatial
 
 import jakarta.persistence.EntityManager
-import org.locationtech.jts.geom.Geometry
 
 /**
  * Represents the input context of a spatial analysis.
@@ -16,9 +15,7 @@ import org.locationtech.jts.geom.Geometry
  *
  * It contains NO logic. It is a pure data holder.
  */
-data class SpatialContext(
+data class SpatialContext<T : Any>(
     val entityManager: EntityManager,
-    val entityClass: Class<*>,
-    val referenceGeometry: Geometry,
-    val radiusMeters: Double = 0.0
+    val entityClass: Class<T>
 )

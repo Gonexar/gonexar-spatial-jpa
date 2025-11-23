@@ -14,7 +14,7 @@ fun generateSeries(
 ): NumericExpr<Int> {
 
     return NumericExpr(
-        "",
+        "generate_series_expresion",
         dsl.cb.function(
             "generate_series",
             Int::class.java,
@@ -39,11 +39,4 @@ fun SpatialExpr<Geometry>.interpolatePoint(
 
     return SpatialExpr("${name}_interp", expr)
 }
-
-fun literal(ctx: CriteriaContext<*>, value: Int): NumericExpr<Int> =
-    NumericExpr("lit_$value", ctx.cb.literal(value))
-
-fun literal(ctx: CriteriaContext<*>, value: Double): NumericExpr<Double> =
-    NumericExpr("lit_$value", ctx.cb.literal(value))
-
 
