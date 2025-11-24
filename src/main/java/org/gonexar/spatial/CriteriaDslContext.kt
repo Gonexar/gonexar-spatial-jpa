@@ -5,9 +5,6 @@ import jakarta.persistence.criteria.Expression
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import jakarta.persistence.criteria.Selection
-import org.gonexar.expression.NumericExpr
-import org.gonexar.expression.SpatialExpr
-import org.locationtech.jts.geom.Geometry
 
 /**
  * Internal execution context for the spatial analysis DSL.
@@ -25,7 +22,7 @@ import org.locationtech.jts.geom.Geometry
  * This class contains no geospatial logic. It stores data generated
  * by the DSL in a structured and query-ready form.
  */
-class CriteriaContext<T : Any>(
+class CriteriaDslContext<T : Any>(
     val cb: CriteriaBuilder,
     val root: Root<*>
 ) {
@@ -40,6 +37,10 @@ class CriteriaContext<T : Any>(
     fun putExpression(name: String, expr: Expression<*>) {
         _expressions[name] = expr
     }
+
+    @Suppress("UNCHECKED_CAST")
+    fun projectionOrRoot(): Selection<T> =
+        _projection ?: root as Selection<T>
 
     /**
      * Retrieves a previously registered expression.

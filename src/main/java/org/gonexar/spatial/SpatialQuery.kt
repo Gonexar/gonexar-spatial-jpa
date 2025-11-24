@@ -14,12 +14,12 @@ abstract class SpatialQuery<R : Any>(
     private val root_ = query.from(context.entityClass)
     private val extraPredicates = mutableListOf<Predicate>()
 
-    protected val criteriaCtx = CriteriaContext<R>(cb_, root_)
+    protected val criteriaCtx = CriteriaDslContext<R>(cb_, root_)
     protected val dsl = SpatialDslContext(criteriaCtx)
 
     // Expor cb e root como antes
     protected val cb get() = dsl.cb
-    protected val root get() = dsl.root
+    protected val root get() = dsl.entity
 
     protected abstract fun build()
 

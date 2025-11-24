@@ -1,20 +1,15 @@
 package org.gonexar.query
 
-import org.gonexar.operator.inputGeom
-import org.gonexar.operator.intersects
-import org.gonexar.repository.SpatialRepository
-import org.gonexar.spatial.query
+import org.gonexar.repository.GonexarSpatialRepository
+import org.gonexar.spatial.queryContainer
 import org.locationtech.jts.geom.Geometry
 
-fun <T : Any> SpatialRepository<T>.intersects(geom: Geometry): List<T> =
-    query(ctx) {
-        val geomUser = inputGeom(this, geom)
-        val polygon = geomColumn("polygon")
+fun <T : Any> GonexarSpatialRepository<T>.intersects(geom: Geometry): List<T> =
+    queryContainer(ctx) {
+        val geomUser = toGeometryExpr(geom)
+        val polygon = geomColumn("geometry")
 
-        where { root, cb ->
-            geomUser.intersects(
-                this, polygon
-            ).toPredicate()
+        where { entity, cb ->
+            geomUser.intersects(polygon).toPredicate()
         }
-        resultProjection(root)
     }

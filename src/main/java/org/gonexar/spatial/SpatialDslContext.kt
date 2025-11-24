@@ -14,16 +14,18 @@ import org.locationtech.jts.geom.Geometry
  *  - Expose conveniences such as raster("rast") and inputGeom()
  *  - Allow definition of the final projection (resultProjection)
  */
-class SpatialDslContext<R : Any>(
-    val ctx: CriteriaContext<R>,
+abstract class SpatialDslContext<R : Any>(
+    val ctx: CriteriaDslContext<R>
 ) {
-    private val dsl = this
+    val dsl = this
 
     /** Shortcut to CriteriaBuilder from context. */
     val cb: CriteriaBuilder get() = ctx.cb
 
     /** Shortcut to JPA root entity. */
-    val root: Root<*> get() = ctx.root
+    val entity: Root<*> get() = ctx.root
+
+    fun Root<R>.toSelection(): Selection<*> = this as Selection<R>
 
     /**
      * Registers an expression in the context under a name/alias.
@@ -48,7 +50,7 @@ class SpatialDslContext<R : Any>(
         val alias = "raster_$fieldName"
         if (!ctx.containsExpression(alias)) {
             @Suppress("UNCHECKED_CAST")
-            val path = root.get<Any>(fieldName) as Expression<Raster>
+            val path = entity.get<Any>(fieldName) as Expression<Raster>
             register(alias, path)
         }
         return expr(alias)
@@ -61,14 +63,10 @@ class SpatialDslContext<R : Any>(
         val alias = "geom_$fieldName"
         if (!ctx.containsExpression(alias)) {
             @Suppress("UNCHECKED_CAST")
-            val path = root.get<Geometry>(fieldName) as Expression<Geometry>
+            val path = entity.get<Geometry>(fieldName) as Expression<Geometry>
             register(alias, path)
         }
         return expr(alias)
-    }
-
-    fun <T> Path<T>.criteriaBuilder(): CriteriaBuilder {
-        return cb
     }
 
     /**
@@ -76,16 +74,29 @@ class SpatialDslContext<R : Any>(
      * This is typically a CriteriaBuilder.construct(...)
      * mapping expressions to a result DTO.
      */
-    fun resultProjection(selection: Selection<R>) {
-        ctx.setProjection(selection)
+    fun <X> resultProjection(selection: Selection<X>) {
+        @Suppress("UNCHECKED_CAST")
+        ctx.setProjection(selection as Selection<R>)
+    }
+
+    inline fun <reified R : Any> select(
+        vararg parts: SpatialExpr<*>
+    ) {
+        val exprs = parts.map { it.expr }.toTypedArray()
+
+        val selection = cb.construct(
+            R::class.java,
+            *exprs
+        )
+        resultProjection(selection)
     }
 
     fun where(predicate: Predicate) {
         ctx.addPredicate(predicate)
     }
 
-    fun where(block: (root: Root<*>, cb: CriteriaBuilder) -> Predicate) {
-        val p = block(root, cb)
+    fun where(block: (entity: Root<*>, cb: CriteriaBuilder) -> Predicate) {
+        val p = block(entity, cb)
         ctx.addPredicate(p)
     }
 
@@ -150,4 +161,7 @@ class SpatialDslContext<R : Any>(
     fun SpatialExpr<Boolean>.toPredicate(): Predicate {
         return dsl.cb.isTrue(this.expr)
     }
+
+    fun <T> SpatialExpr<T>.asSelection(): Selection<T> =
+        expr.alias(name)
 }

@@ -225,7 +225,7 @@ fun SpatialExpr<Geometry>.symDifference(
  */
 fun SpatialDslContext<*>.filterIntersects(entityGeomFieldName: String, geom: SpatialExpr<Geometry>) {
     val cb = this.cb
-    val entityGeom = this.root.get<Geometry>(entityGeomFieldName)
+    val entityGeom = this.entity.get<Geometry>(entityGeomFieldName)
     val intersects: Expression<Boolean> = cb.function("ST_Intersects", Boolean::class.java, entityGeom, geom.expr)
     this.ctx.addPredicate(cb.isTrue(intersects))
 }
@@ -248,20 +248,6 @@ fun SpatialExpr<Geometry>.asGeography(
     alias: String = "${this.name}_geog"
 ): SpatialExpr<Any> {
     val expr = dsl.cb.function("geography", Any::class.java, this.expr)
-    return dsl.register(alias, expr)
-}
-
-fun SpatialExpr<Geometry>.intersects(
-    dsl: SpatialDslContext<*>,
-    other: SpatialExpr<Geometry>,
-    alias: String = "${this.name}_intersects_${other.name}"
-): SpatialExpr<Boolean> {
-    val expr = dsl.cb.function(
-        "ST_Intersects",
-        Boolean::class.java,
-        this.expr,
-        other.expr
-    )
     return dsl.register(alias, expr)
 }
 
