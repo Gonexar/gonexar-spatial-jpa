@@ -10,23 +10,41 @@ interface MatrixOperator {
 
     fun SpatialExpr<Raster>.stValue(
         dsl: SpatialDslContext<*>,
-        geom: SpatialExpr<Geometry>,
-        alias: String = "st_value_${name}_${geom.name}"
-    ): SpatialExpr<Double?> =
-        dsl.register(alias, dsl.cb.function("ST_Value", Double::class.java, expr, geom.expr))
+        geom: SpatialExpr<Geometry>
+    ): SpatialExpr<Double?> {
+        val alias = dsl.autoAlias(expr)
+        return dsl.register(
+            alias,
+            dsl.cb.function(
+                "ST_Value",
+                Double::class.java,
+                expr,
+                geom.expr
+            )
+        )
+    }
 
     fun SpatialExpr<Raster>.stClip(
         dsl: SpatialDslContext<*>,
-        geom: SpatialExpr<Geometry>,
-        alias: String = "st_clip_${name}_${geom.name}"
-    ): SpatialExpr<Raster> =
-        dsl.register(alias, dsl.cb.function("ST_Clip", Raster::class.java, expr, geom.expr))
+        geom: SpatialExpr<Geometry>
+    ): SpatialExpr<Raster> {
+        val alias = dsl.autoAlias(expr)
+        return dsl.register(
+            alias,
+            dsl.cb.function(
+                "ST_Clip",
+                Raster::class.java,
+                expr,
+                geom.expr
+            )
+        )
+    }
 
     fun SpatialExpr<Raster>.stSummaryStats(
-        dsl: SpatialDslContext<*>,
-        alias: String = "st_stats_${name}"
+        dsl: SpatialDslContext<*>
     ): RasterStatsExpr {
 
+        val alias = dsl.autoAlias(expr)
         val stats = dsl.cb.function("ST_SummaryStats", Any::class.java, expr)
 
         val min =

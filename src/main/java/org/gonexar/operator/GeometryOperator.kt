@@ -332,4 +332,28 @@ interface GeometryOperator {
         val expr = dsl.cb.function("ST_Area", Double::class.java, this.expr)
         return dsl.register(dsl.autoAlias(expr), expr)
     }
+
+    fun SpatialExpr<Geometry>.stPerimeter(
+        dsl: SpatialDslContext<*>,
+        useGeography: Boolean = false,
+        useSpheroid: Boolean = true
+    ): SpatialExpr<Double> {
+
+        val arg = if (useGeography) {
+            // CAST geometry → geography
+            dsl.cb.function("geography", Any::class.java, expr)
+        } else {
+            expr
+        }
+
+        val alias = dsl.autoAlias(expr)
+
+        val perimeterExpr =
+            if (useGeography)
+                dsl.cb.function("ST_Perimeter", Double::class.java, arg, dsl.cb.literal(useSpheroid))
+            else
+                dsl.cb.function("ST_Perimeter", Double::class.java, arg)
+
+        return dsl.register(alias, perimeterExpr)
+    }
 }

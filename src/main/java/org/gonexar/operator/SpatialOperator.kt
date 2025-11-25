@@ -48,23 +48,6 @@ interface SpatialOperator {
         return dsl.register(alias, expr)
     }
 
-    /** ST_Buffer(geom, distance) */
-    fun SpatialExpr<Geometry>.buffer(
-        dsl: SpatialDslContext<*>,
-        distance: Double
-    ): SpatialExpr<Geometry> {
-
-        val expr = dsl.cb.function(
-            "ST_Buffer",
-            Geometry::class.java,
-            this.expr,
-            dsl.cb.literal(distance)
-        )
-
-        val alias = dsl.autoAlias(expr)
-        return dsl.register(alias, expr)
-    }
-
     /** ST_Union(a, b) */
     fun SpatialExpr<Geometry>.union(
         dsl: SpatialDslContext<*>,
