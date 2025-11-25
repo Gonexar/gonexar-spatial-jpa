@@ -1,6 +1,6 @@
 package org.gonexar.spatial
 
-fun <T : Any> queryContainer(
+fun <T : Any> query(
     ctx: SpatialContext<T>,
     block: SpatialDslContainer<T>.() -> Unit
 ): List<T> {
