@@ -80,20 +80,14 @@ class SpatialDslContainer<R : Any>(
         distance: Double
     ): SpatialExpr<Boolean> = this.stDWithin(dsl, other, distance)
 
-    /**
-     * YEAR(expr)
-     */
+    /** YEAR(expr) */
     fun SpatialExpr<Any>.year(): SpatialExpr<Int> = this.year(dsl)
 
-    /**
-     * MONTH(expr)
-     */
+    /**  MONTH(expr) */
     fun SpatialExpr<Any>.month(
     ): SpatialExpr<Int> = this.month(dsl)
 
-    /**
-     * DAY(expr)
-     */
+    /** DAY(expr) */
     fun SpatialExpr<Any>.day(
     ): SpatialExpr<Int> = this.day(dsl)
 
