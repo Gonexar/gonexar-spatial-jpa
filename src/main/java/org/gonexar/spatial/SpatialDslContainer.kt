@@ -6,6 +6,7 @@ import org.gonexar.operator.GeometryOperator
 import org.gonexar.operator.MathOperator
 import org.gonexar.operator.MatrixOperator
 import org.gonexar.operator.SpatialOperator
+import org.gonexar.operator.TemporalOperator
 import org.gonexar.operator.TopologyOperator
 import org.locationtech.jts.geom.Geometry
 
@@ -16,7 +17,8 @@ class SpatialDslContainer<R : Any>(
     MathOperator,
     MatrixOperator,
     SpatialOperator,
-    TopologyOperator {
+    TopologyOperator,
+    TemporalOperator {
 
     @Suppress("UNCHECKED_CAST")
     fun <T> SpatialDslContext<R>.selectRoot(): Selection<T> =
