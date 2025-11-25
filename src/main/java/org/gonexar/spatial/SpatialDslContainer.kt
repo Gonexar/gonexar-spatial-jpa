@@ -4,12 +4,19 @@ import jakarta.persistence.criteria.Selection
 import org.gonexar.expression.SpatialExpr
 import org.gonexar.operator.GeometryOperator
 import org.gonexar.operator.MathOperator
+import org.gonexar.operator.MatrixOperator
+import org.gonexar.operator.SpatialOperator
 import org.gonexar.operator.TopologyOperator
 import org.locationtech.jts.geom.Geometry
 
 class SpatialDslContainer<R : Any>(
     ctx: CriteriaDslContext<R>
-) : SpatialDslContext<R>(ctx), GeometryOperator, TopologyOperator, MathOperator {
+) : SpatialDslContext<R>(ctx),
+    GeometryOperator,
+    MathOperator,
+    MatrixOperator,
+    SpatialOperator,
+    TopologyOperator {
 
     @Suppress("UNCHECKED_CAST")
     fun <T> SpatialDslContext<R>.selectRoot(): Selection<T> =
