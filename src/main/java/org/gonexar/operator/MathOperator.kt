@@ -9,7 +9,7 @@ interface MathOperator {
 
     /** generate_series(start, stop, step) */
     fun generateSeries(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         start: NumericExpr<Int>,
         stop: NumericExpr<Int>,
         step: NumericExpr<Int> = NumericExpr("lit_1", dsl.cb.literal(1))
@@ -31,7 +31,7 @@ interface MathOperator {
 
     /** ST_LineInterpolatePoint(geom, fraction) */
     fun SpatialExpr<Geometry>.interpolatePoint(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         fraction: NumericExpr<Double>
     ): SpatialExpr<Geometry> {
 

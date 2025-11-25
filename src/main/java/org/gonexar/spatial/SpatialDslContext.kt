@@ -14,8 +14,8 @@ import org.locationtech.jts.geom.Geometry
  *  - Expose conveniences such as raster("rast") and inputGeom()
  *  - Allow definition of the final projection (resultProjection)
  */
-abstract class SpatialDslContext<R : Any>(
-    val ctx: CriteriaDslContext<R>
+abstract class SpatialDslContext<E : Any, R : Any>(
+    val ctx: CriteriaDslContext<E, R>
 ) {
     val dsl = this
 

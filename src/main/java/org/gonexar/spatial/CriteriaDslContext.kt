@@ -22,59 +22,42 @@ import jakarta.persistence.criteria.Selection
  * This class contains no geospatial logic. It stores data generated
  * by the DSL in a structured and query-ready form.
  */
-class CriteriaDslContext<T : Any>(
+class CriteriaDslContext<E : Any, R : Any>(
     val cb: CriteriaBuilder,
-    val root: Root<*>
+    val root: Root<E>
 ) {
+
     private val _expressions = mutableMapOf<String, Expression<*>>()
     private val _predicates = mutableListOf<Predicate>()
-    private var _projection: Selection<T>? = null
+    private var _projection: Selection<R>? = null
 
-    /**
-     * Registers a typed expression in the context.
-     * Typically called by DSL helpers such as buffer(), clip(), summaryStats().
-     */
     fun putExpression(name: String, expr: Expression<*>) {
         _expressions[name] = expr
     }
 
-    @Suppress("UNCHECKED_CAST")
-    fun projectionOrRoot(): Selection<T> =
-        _projection ?: root as Selection<T>
+    fun containsExpression(name: String): Boolean =
+        _expressions.containsKey(name)
 
-    /**
-     * Retrieves a previously registered expression.
-     * Throws if the name does not exist.
-     */
     @Suppress("UNCHECKED_CAST")
-    fun <E> getExpression(name: String): Expression<E> =
-        _expressions[name] as? Expression<E>
+    fun <T> getExpression(name: String): Expression<T> =
+        _expressions[name] as? Expression<T>
             ?: throw IllegalStateException("Expression '$name' not found")
 
-    /** Checks whether the expression name exists in the context. */
-    fun containsExpression(name: String): Boolean = _expressions.containsKey(name)
-
-    /** Adds a predicate (WHERE clause component). */
     fun addPredicate(pred: Predicate) {
         _predicates.add(pred)
     }
 
-    /** Returns all accumulated predicates. */
-    fun predicates(): Array<Predicate> = _predicates.toTypedArray()
+    fun predicates(): Array<Predicate> =
+        _predicates.toTypedArray()
 
-    /**
-     * Defines the final SELECT projection that the query should return.
-     * This is defined inside the DSL using resultProjection(...).
-     */
-    fun setProjection(sel: Selection<T>) {
+    fun setProjection(sel: Selection<R>) {
         _projection = sel
     }
 
-    /**
-     * Retrieves the SELECT projection.
-     * Throws if projection was never defined.
-     */
-    fun projection(): Selection<T> =
-        _projection ?: throw IllegalStateException("Projection not defined")
+    @Suppress("UNCHECKED_CAST")
+    fun projectionOrRoot(): Selection<R> =
+        _projection ?: root as Selection<R> // seguro agora
 
+    fun projection(): Selection<R> =
+        _projection ?: throw IllegalStateException("Projection not defined")
 }

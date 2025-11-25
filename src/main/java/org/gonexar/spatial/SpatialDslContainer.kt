@@ -1,6 +1,5 @@
 package org.gonexar.spatial
 
-import jakarta.persistence.criteria.Selection
 import org.gonexar.expression.NumericExpr
 import org.gonexar.expression.SpatialExpr
 import org.gonexar.operator.GeometryOperator
@@ -13,19 +12,15 @@ import org.gonexar.type.Raster
 import org.gonexar.type.RasterStatsExpr
 import org.locationtech.jts.geom.Geometry
 
-class SpatialDslContainer<R : Any>(
-    ctx: CriteriaDslContext<R>
-) : SpatialDslContext<R>(ctx),
+class SpatialDslContainer<E : Any, R : Any>(
+    ctx: CriteriaDslContext<E, R>
+) : SpatialDslContext<E, R>(ctx),
     GeometryOperator,
     MathOperator,
     MatrixOperator,
     SpatialOperator,
     TopologyOperator,
     TemporalOperator {
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T> SpatialDslContext<R>.selectRoot(): Selection<T> =
-        entity as Selection<T>
 
     fun SpatialExpr<Geometry>.buffer(
         distance: Double

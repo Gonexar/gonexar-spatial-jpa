@@ -16,7 +16,7 @@ interface TopologyOperator {
 
     /** ST_Intersects(a, b) */
     fun SpatialExpr<Geometry>.stIntersects(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Boolean> {
 
@@ -35,7 +35,7 @@ interface TopologyOperator {
 
     /** ST_Contains(a, b) */
     fun SpatialExpr<Geometry>.stContains(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Boolean> {
 
@@ -54,7 +54,7 @@ interface TopologyOperator {
 
     /** ST_Within(a, b) */
     fun SpatialExpr<Geometry>.stWithin(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Boolean> {
 
@@ -73,7 +73,7 @@ interface TopologyOperator {
 
     /** ST_Covers(a, b) */
     fun SpatialExpr<Geometry>.stCovers(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Boolean> {
 
@@ -92,7 +92,7 @@ interface TopologyOperator {
 
     /** ST_CoveredBy(a, b) */
     fun SpatialExpr<Geometry>.stCoveredBy(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Boolean> {
 
@@ -111,7 +111,7 @@ interface TopologyOperator {
 
     /** ST_Touches(a, b) */
     fun SpatialExpr<Geometry>.stTouches(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Boolean> {
 
@@ -130,7 +130,7 @@ interface TopologyOperator {
 
     /** ST_Crosses(a, b) */
     fun SpatialExpr<Geometry>.stCrosses(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Boolean> {
 
@@ -149,7 +149,7 @@ interface TopologyOperator {
 
     /** ST_Overlaps(a, b) */
     fun SpatialExpr<Geometry>.stOverlaps(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Boolean> {
 
@@ -168,7 +168,7 @@ interface TopologyOperator {
 
     /** ST_DWithin(a, b, distance) */
     fun SpatialExpr<Geometry>.stDWithin(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>,
         distance: Double
     ): SpatialExpr<Boolean> {

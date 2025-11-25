@@ -9,7 +9,7 @@ import org.locationtech.jts.geom.Geometry
 interface MatrixOperator {
 
     fun SpatialExpr<Raster>.stValue(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         geom: SpatialExpr<Geometry>
     ): SpatialExpr<Double?> {
         val alias = dsl.autoAlias(expr)
@@ -25,7 +25,7 @@ interface MatrixOperator {
     }
 
     fun SpatialExpr<Raster>.stClip(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         geom: SpatialExpr<Geometry>
     ): SpatialExpr<Raster> {
         val alias = dsl.autoAlias(expr)
@@ -41,7 +41,7 @@ interface MatrixOperator {
     }
 
     fun SpatialExpr<Raster>.stSummaryStats(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): RasterStatsExpr {
 
         val alias = dsl.autoAlias(expr)

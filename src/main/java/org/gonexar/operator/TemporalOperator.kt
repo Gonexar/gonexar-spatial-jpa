@@ -9,7 +9,7 @@ interface TemporalOperator {
      * YEAR(expr)
      */
     fun SpatialExpr<Any>.year(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<Int> {
 
         val expr = dsl.cb.function(
@@ -27,7 +27,7 @@ interface TemporalOperator {
      * MONTH(expr)
      */
     fun SpatialExpr<Any>.month(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<Int> {
 
         val expr = dsl.cb.function(
@@ -45,7 +45,7 @@ interface TemporalOperator {
      * DAY(expr)
      */
     fun SpatialExpr<Any>.day(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<Int> {
 
         val expr = dsl.cb.function(

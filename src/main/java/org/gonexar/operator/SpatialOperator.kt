@@ -20,7 +20,7 @@ interface SpatialOperator {
 
     /** ST_AsText(geom) */
     fun SpatialExpr<Geometry>.asText(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<String> {
 
         val expr = dsl.cb.function(
@@ -35,7 +35,7 @@ interface SpatialOperator {
 
     /** ST_AsBinary(geom) */
     fun SpatialExpr<Geometry>.asBinary(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<ByteArray> {
 
         val expr = dsl.cb.function(
@@ -50,7 +50,7 @@ interface SpatialOperator {
 
     /** ST_Union(a, b) */
     fun SpatialExpr<Geometry>.union(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Geometry> {
 
@@ -67,7 +67,7 @@ interface SpatialOperator {
 
     /** ST_Intersection(a, b) */
     fun SpatialExpr<Geometry>.intersection(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Geometry> {
 
@@ -84,7 +84,7 @@ interface SpatialOperator {
 
     /** ST_Difference(a, b) */
     fun SpatialExpr<Geometry>.difference(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Geometry> {
 
@@ -101,7 +101,7 @@ interface SpatialOperator {
 
     /** ST_SymDifference(a, b) */
     fun SpatialExpr<Geometry>.symDifference(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Geometry> {
 
@@ -118,7 +118,7 @@ interface SpatialOperator {
 
     /** ST_LineMerge(geom) */
     fun SpatialExpr<Geometry>.lineMerge(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<Geometry> {
 
         val expr = dsl.cb.function(
@@ -133,7 +133,7 @@ interface SpatialOperator {
 
     /** CAST geometria para geography */
     fun SpatialExpr<Geometry>.asGeography(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<Any> {
 
         val expr = dsl.cb.function(
@@ -148,7 +148,7 @@ interface SpatialOperator {
 
     /** ST_Length(geography) */
     fun SpatialExpr<Geometry>.lengthGeography(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<Double> {
 
         val geo = dsl.cb.function("geography", Any::class.java, this.expr)
@@ -165,7 +165,7 @@ interface SpatialOperator {
 
     /** ST_Distance(a, b) */
     fun SpatialExpr<Geometry>.distance(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         other: SpatialExpr<Geometry>,
         useGeography: Boolean = false
     ): SpatialExpr<Double> {
@@ -188,7 +188,7 @@ interface SpatialOperator {
 
     /** Raster: ST_Slope(raster) */
     fun SpatialExpr<Any>.slope(
-        dsl: SpatialDslContext<*>
+        dsl: SpatialDslContext<*, *>
     ): SpatialExpr<Any> {
 
         val expr = dsl.cb.function(
@@ -203,7 +203,7 @@ interface SpatialOperator {
     }
 
     /** Raster: ST_Value(rast, geom) */
-    fun SpatialDslContext<*>.stValue(
+    fun SpatialDslContext<*, *>.stValue(
         raster: SpatialExpr<Raster>,
         geom: SpatialExpr<Geometry>
     ): SpatialExpr<Double?> {
@@ -220,7 +220,7 @@ interface SpatialOperator {
     }
 
     /** Literal Point */
-    fun SpatialDslContext<*>.literalPoint(
+    fun SpatialDslContext<*, *>.literalPoint(
         coordinate: Coordinate,
         srid: Int = 4326
     ): SpatialExpr<Geometry> {
@@ -238,7 +238,7 @@ interface SpatialOperator {
 
     /** ST_LineInterpolatePoint */
     fun SpatialExpr<Geometry>.interpolatePoint(
-        dsl: SpatialDslContext<*>,
+        dsl: SpatialDslContext<*, *>,
         fraction: Double
     ): SpatialExpr<Geometry> {
 

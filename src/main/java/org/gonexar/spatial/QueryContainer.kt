@@ -1,32 +1,32 @@
 package org.gonexar.spatial
 
-fun <T : Any> query(
-    ctx: SpatialContext<T>,
-    block: SpatialDslContainer<T>.() -> Unit
-): List<T> {
+inline fun <E : Any, reified R : Any> query(
+    ctx: SpatialContext<E>,
+    noinline block: SpatialDslContainer<E, R>.() -> Unit
+): List<R> {
 
     val entityManager = ctx.entityManager
-    val criteriaBuilder = entityManager.criteriaBuilder
-    val entityClass = ctx.entityClass
+    val cb = entityManager.criteriaBuilder
 
-    val query = criteriaBuilder.createQuery(entityClass)
-    val root = query.from(entityClass)
+    val query = cb.createQuery(R::class.java)
+    val root = query.from(ctx.entityClass)  // root = entidade
 
-    val criteriaCtx = CriteriaDslContext<T>(criteriaBuilder, root)
-    val dslContainer = SpatialDslContainer(criteriaCtx)
+    val criteriaCtx = CriteriaDslContext<E, R>(cb, root)
+    val dsl = SpatialDslContainer(criteriaCtx)
 
-    // executar a DSL
-    dslContainer.block()
+    // Executa blocos DSL (projeção, where, expressões)
+    dsl.block()
 
     // caso o DSL tenha definido um projection customizado (DTO)
     val projection = criteriaCtx.projectionOrRoot()
     query.select(projection)
 
-    // aplicar predicados espaciais
     val predicates = criteriaCtx.predicates()
     if (predicates.isNotEmpty()) {
         query.where(*predicates)
     }
+
     return entityManager.createQuery(query).resultList
 }
+
 
