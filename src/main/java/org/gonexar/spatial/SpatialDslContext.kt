@@ -69,6 +69,10 @@ abstract class SpatialDslContext<R : Any>(
         return expr(alias)
     }
 
+    /** Gera alias automático baseado na identidade da expressão */
+    fun <T> autoAlias(expr: Expression<T>): String =
+        "e_${System.identityHashCode(expr)}"
+
     /**
      * Defines the final SELECT projection of the query.
      * This is typically a CriteriaBuilder.construct(...)

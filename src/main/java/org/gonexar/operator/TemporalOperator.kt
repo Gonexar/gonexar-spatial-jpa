@@ -5,12 +5,58 @@ import org.gonexar.spatial.SpatialDslContext
 
 interface TemporalOperator {
 
-    fun SpatialExpr<Any>.year(dsl: SpatialDslContext<*>): SpatialExpr<Int> =
-        dsl.register("${name}_year", dsl.cb.function("YEAR", Int::class.java, expr))
+    /**
+     * YEAR(expr)
+     */
+    fun SpatialExpr<Any>.year(
+        dsl: SpatialDslContext<*>
+    ): SpatialExpr<Int> {
 
-    fun SpatialExpr<Any>.month(dsl: SpatialDslContext<*>): SpatialExpr<Int> =
-        dsl.register("${name}_month", dsl.cb.function("MONTH", Int::class.java, expr))
+        val expr = dsl.cb.function(
+            "YEAR",
+            Int::class.java,
+            this.expr
+        )
 
-    fun SpatialExpr<Any>.day(dsl: SpatialDslContext<*>): SpatialExpr<Int> =
-        dsl.register("${name}_day", dsl.cb.function("DAY", Int::class.java, expr))
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
+    /**
+     * MONTH(expr)
+     */
+    fun SpatialExpr<Any>.month(
+        dsl: SpatialDslContext<*>
+    ): SpatialExpr<Int> {
+
+        val expr = dsl.cb.function(
+            "MONTH",
+            Int::class.java,
+            this.expr
+        )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
+    /**
+     * DAY(expr)
+     */
+    fun SpatialExpr<Any>.day(
+        dsl: SpatialDslContext<*>
+    ): SpatialExpr<Int> {
+
+        val expr = dsl.cb.function(
+            "DAY",
+            Int::class.java,
+            this.expr
+        )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
 }
+

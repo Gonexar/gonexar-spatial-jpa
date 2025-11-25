@@ -17,93 +17,172 @@ interface TopologyOperator {
     /** ST_Intersects(a, b) */
     fun SpatialExpr<Geometry>.stIntersects(
         dsl: SpatialDslContext<*>,
-        other: SpatialExpr<Geometry>,
-        alias: String = "st_intersects_${name}_${other.name}"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_Intersects", Boolean::class.java, expr, other.expr)
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_Intersects",
+            Boolean::class.java,
+            this.expr,
+            other.expr
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
 
     /** ST_Contains(a, b) */
     fun SpatialExpr<Geometry>.stContains(
         dsl: SpatialDslContext<*>,
-        other: SpatialExpr<Geometry>,
-        alias: String = "st_contains_${name}_${other.name}"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_Contains", Boolean::class.java, expr, other.expr)
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_Contains",
+            Boolean::class.java,
+            this.expr,
+            other.expr
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
 
     /** ST_Within(a, b) */
     fun SpatialExpr<Geometry>.stWithin(
         dsl: SpatialDslContext<*>,
-        other: SpatialExpr<Geometry>,
-        alias: String = "st_within_${name}_${other.name}"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_Within", Boolean::class.java, expr, other.expr)
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_Within",
+            Boolean::class.java,
+            this.expr,
+            other.expr
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
 
     /** ST_Covers(a, b) */
     fun SpatialExpr<Geometry>.stCovers(
         dsl: SpatialDslContext<*>,
-        other: SpatialExpr<Geometry>,
-        alias: String = "st_covers_${name}_${other.name}"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_Covers", Boolean::class.java, expr, other.expr)
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_Covers",
+            Boolean::class.java,
+            this.expr,
+            other.expr
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
 
     /** ST_CoveredBy(a, b) */
     fun SpatialExpr<Geometry>.stCoveredBy(
         dsl: SpatialDslContext<*>,
-        other: SpatialExpr<Geometry>,
-        alias: String = "st_coveredby_${name}_${other.name}"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_CoveredBy", Boolean::class.java, expr, other.expr)
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_CoveredBy",
+            Boolean::class.java,
+            this.expr,
+            other.expr
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
 
     /** ST_Touches(a, b) */
     fun SpatialExpr<Geometry>.stTouches(
         dsl: SpatialDslContext<*>,
-        other: SpatialExpr<Geometry>,
-        alias: String = "st_touches_${name}_${other.name}"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_Touches", Boolean::class.java, expr, other.expr)
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_Touches",
+            Boolean::class.java,
+            this.expr,
+            other.expr
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
 
     /** ST_Crosses(a, b) */
     fun SpatialExpr<Geometry>.stCrosses(
         dsl: SpatialDslContext<*>,
-        other: SpatialExpr<Geometry>,
-        alias: String = "st_crosses_${name}_${other.name}"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_Crosses", Boolean::class.java, expr, other.expr)
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_Crosses",
+            Boolean::class.java,
+            this.expr,
+            other.expr
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
 
     /** ST_Overlaps(a, b) */
     fun SpatialExpr<Geometry>.stOverlaps(
         dsl: SpatialDslContext<*>,
-        other: SpatialExpr<Geometry>,
-        alias: String = "st_overlaps_${name}_${other.name}"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_Overlaps", Boolean::class.java, expr, other.expr)
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_Overlaps",
+            Boolean::class.java,
+            this.expr,
+            other.expr
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
+
 
     /** ST_DWithin(a, b, distance) */
     fun SpatialExpr<Geometry>.stDWithin(
         dsl: SpatialDslContext<*>,
         other: SpatialExpr<Geometry>,
-        distance: Double,
-        alias: String = "st_dwithin_${name}_${other.name}_$distance"
-    ): SpatialExpr<Boolean> =
-        dsl.register(alias,
-            dsl.cb.function("ST_DWithin", Boolean::class.java,
-                expr, other.expr, dsl.cb.literal(distance)
-            )
+        distance: Double
+    ): SpatialExpr<Boolean> {
+
+        val expr = dsl.cb.function(
+            "ST_DWithin",
+            Boolean::class.java,
+            this.expr,
+            other.expr,
+            dsl.cb.literal(distance)
         )
+
+        val alias = dsl.autoAlias(expr)
+
+        return dsl.register(alias, expr)
+    }
 }

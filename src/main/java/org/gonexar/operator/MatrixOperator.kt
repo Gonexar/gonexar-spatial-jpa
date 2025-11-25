@@ -7,6 +7,7 @@ import org.gonexar.type.RasterStatsExpr
 import org.locationtech.jts.geom.Geometry
 
 interface MatrixOperator {
+
     fun SpatialExpr<Raster>.stValue(
         dsl: SpatialDslContext<*>,
         geom: SpatialExpr<Geometry>,

@@ -39,4 +39,20 @@ class SpatialDslContainer<R : Any>(
     fun SpatialExpr<Geometry>.intersection(
         other: SpatialExpr<Geometry>
     ): SpatialExpr<Geometry> = this.stIntersection(dsl, other)
+
+    /** ST_Contains(a, b) */
+    fun SpatialExpr<Geometry>.stContains(
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> = this.stContains(dsl, other)
+
+    /** ST_Within(a, b) */
+    fun SpatialExpr<Geometry>.stWithin(
+        other: SpatialExpr<Geometry>
+    ): SpatialExpr<Boolean> = this.stWithin(dsl, other)
+
+    /** ST_Covers(a, b) */
+    fun SpatialExpr<Geometry>.stCovers(
+        other: SpatialExpr<Geometry>,
+        alias: String?=null
+    ): SpatialExpr<Boolean> = this.stCovers(dsl, alias)
 }
