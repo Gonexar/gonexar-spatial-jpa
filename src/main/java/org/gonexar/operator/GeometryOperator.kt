@@ -286,14 +286,27 @@ interface GeometryOperator {
     /** ST_Distance(a, b) */
     fun SpatialExpr<Geometry>.stDistance(
         dsl: SpatialDslContext<*, *>,
-        other: SpatialExpr<Geometry>
+        other: SpatialExpr<Geometry>,
+        useGeography: Boolean = true  // <<< padrão
     ): SpatialExpr<Double> {
+
+        val g1 = if (useGeography) {
+            dsl.cb.function("geography", Any::class.java, this.expr)
+        } else {
+            this.expr
+        }
+
+        val g2 = if (useGeography) {
+            dsl.cb.function("geography", Any::class.java, other.expr)
+        } else {
+            other.expr
+        }
 
         val expr = dsl.cb.function(
             "ST_Distance",
             Double::class.java,
-            this.expr,
-            other.expr
+            g1,
+            g2
         )
 
         return dsl.register(dsl.autoAlias(expr), expr)

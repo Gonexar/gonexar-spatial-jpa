@@ -1,6 +1,7 @@
 package org.gonexar.spatial
 
 import jakarta.persistence.criteria.*
+import org.gonexar.ast.SelectBuilder
 import org.gonexar.expression.NumericExpr
 import org.gonexar.expression.SpatialExpr
 import org.gonexar.type.Raster
@@ -83,15 +84,14 @@ abstract class SpatialDslContext<E : Any, R : Any>(
         ctx.setProjection(selection as Selection<R>)
     }
 
-    inline fun <reified R : Any> select(
-        vararg parts: SpatialExpr<*>
+    inline fun <reified R : Any> SpatialDslContainer<*, R>.select(
+        block: SelectBuilder<R>.() -> Unit
     ) {
-        val exprs = parts.map { it.expr }.toTypedArray()
+        val builder = SelectBuilder<R>(this)
+        builder.block()
 
-        val selection = cb.construct(
-            R::class.java,
-            *exprs
-        )
+        val selection = builder.build<R>(cb, entity)
+
         resultProjection(selection)
     }
 

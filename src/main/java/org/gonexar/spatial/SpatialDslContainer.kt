@@ -198,5 +198,4 @@ class SpatialDslContainer<E : Any, R : Any>(
     fun SpatialExpr<Geometry>.interpolatePoint(
         fraction: NumericExpr<Double>
     ): SpatialExpr<Geometry> = this.interpolatePoint(dsl, fraction)
-
 }
