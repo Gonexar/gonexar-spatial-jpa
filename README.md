@@ -15,13 +15,21 @@ PostGIS é extremamente poderoso — mas escrever SQL espacial realista signific
 funções complexas (`ST_Buffer`, `ST_Intersection`, `ST_LineLocatePoint`, `ST_ClosestPoint`, etc.),
 com geography casts, alias complicados e dezenas de expressões.
 
+Escrever SQL espacial realista significa lidar com:
+
+- funções difíceis do PostGIS
+- aliases e subconsultas
+- conversões para geography
+- código SQL pouco legível e frágil
+- mistura de lógica de domínio com SQL
+
 O Gonexar resolve isso com:
 
 - Sintaxe fluente em Kotlin
-- Tipagem forte (Kotlin + Criteria API)
-- DSL que compõe operadores PostGIS automaticamente
-- Integração transparente com JPA e repositórios
-- Resultados mapeados direto para DTOs ou entidades
+- Tipagem forte via Criteria API
+- Operadores Compostos (buffer → intersect → distance → percent)
+- Retorno de **Entity** ou **DTO**
+- Integração transparente com Spring + Hibernate
 
 ---
 
