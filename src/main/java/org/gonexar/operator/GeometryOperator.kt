@@ -356,10 +356,21 @@ interface GeometryOperator {
     /** ST_Area(geom) */
     fun SpatialExpr<Geometry>.stArea(
         dsl: SpatialDslContext<*, *>,
+        alias: String = "${this.name}_area"
     ): SpatialExpr<Double> {
 
-        val expr = dsl.cb.function("ST_Area", Double::class.java, this.expr)
-        return dsl.register(dsl.autoAlias(expr), expr)
+        val asGeog = dsl.cb.function(
+            "geography",
+            Any::class.java,
+            this.expr
+        )
+
+        val expr = dsl.cb.function(
+            "ST_Area",
+            Double::class.java,
+            asGeog
+        )
+        return dsl.register(alias, expr)
     }
 
     fun SpatialExpr<Geometry>.stPerimeter(
