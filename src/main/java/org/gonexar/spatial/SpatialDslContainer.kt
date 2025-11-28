@@ -177,7 +177,7 @@ class SpatialDslContainer<E : Any, R : Any>(
     fun SpatialExpr<Geometry>.area(
     ): SpatialExpr<Double> = this.stArea(dsl)
 
-    fun SpatialExpr<Geometry>.stPerimeter(
+    fun SpatialExpr<Geometry>.perimeter(
         useGeography: Boolean = false,
         useSpheroid: Boolean = true,
     ): SpatialExpr<Double> = this.stPerimeter(dsl, useGeography, useSpheroid)
