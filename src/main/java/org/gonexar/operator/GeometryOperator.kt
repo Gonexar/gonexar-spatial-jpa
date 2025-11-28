@@ -52,21 +52,37 @@ interface GeometryOperator {
         return dsl.register(dsl.autoAlias(expr), expr)
     }
 
-    /** ST_Buffer(geom, distance) */
+    /** ST_Buffer(geom::geography, distanceInMeters)::geometry */
     fun SpatialExpr<Geometry>.stBuffer(
         dsl: SpatialDslContext<*, *>,
         distance: Double
     ): SpatialExpr<Geometry> {
 
-        val expr = dsl.cb.function(
+        // cast geometry -> geography
+        val geog = dsl.cb.function(
+            "geography",
+            Any::class.java,
+            this.expr
+        )
+
+        // ST_Buffer(geog, distance) :: geography → geometry
+        val bufferGeom = dsl.cb.function(
             "ST_Buffer",
             Geometry::class.java,
-            this.expr,
+            geog,
             dsl.cb.literal(distance)
         )
 
-        return dsl.register(dsl.autoAlias(expr), expr)
+        // cast back to geometry
+        val geomExpr = dsl.cb.function(
+            "geometry",
+            Geometry::class.java,
+            bufferGeom
+        )
+
+        return dsl.register(dsl.autoAlias(geomExpr), geomExpr)
     }
+
 
     /** ST_Simplify(geom, tolerance) */
     fun SpatialExpr<Geometry>.stSimplify(

@@ -26,6 +26,8 @@ class SpatialDslContainer<E : Any, R : Any>(
         distance: Double
     ): SpatialExpr<Geometry> = this.stBuffer(dsl, distance)
 
+    fun SpatialExpr<Geometry>.toGeography(): SpatialExpr<Any> = this.asGeography(dsl)
+
     fun toGeometryExpr(
         geometry: Geometry
     ): SpatialExpr<Geometry> = this.inputGeom(dsl, geometry)

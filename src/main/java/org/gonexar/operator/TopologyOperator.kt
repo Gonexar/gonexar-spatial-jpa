@@ -6,10 +6,8 @@ import org.locationtech.jts.geom.Geometry
 
 /**
  * Operadores Topológicos do PostGIS.
- *
  * Estes operadores trabalham exclusivamente com relações espaciais
  * entre duas geometrias.
- *
  * Eles são integrados ao DSL através do SpatialDslContainer.
  */
 interface TopologyOperator {
