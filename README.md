@@ -30,3 +30,5 @@ O Gonexar resolve isso com:
 ### 1. Instale localmente
 ```bash
 ./gradlew publishToMavenLocal
+ou
+./gradlew publish
