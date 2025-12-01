@@ -107,65 +107,112 @@ abstract class SpatialDslContext<E : Any, R : Any>(
     fun SpatialExpr<Boolean>.asPredicate(): Predicate =
         cb.isTrue(this.expr)
 
+    /**
+     * Adds an equality predicate to the WHERE clause (path = value).
+     */
     fun <T> whereEq(path: Path<T>, value: T) {
         val pred = cb.equal(path, value)
         ctx.addPredicate(pred)
     }
 
+    /**
+     * Adds an inequality predicate to the WHERE clause (path != value).
+     */
     fun <T> whereNeq(path: Path<T>, value: T) {
         val pred = cb.notEqual(path, value)
         ctx.addPredicate(pred)
     }
 
+    /**
+     * Adds a "greater than" predicate to WHERE (path > value).
+     */
     fun <N : Number> whereGt(path: Path<N>, value: N) {
         val pred = cb.gt(path as Expression<out Number>, value)
         ctx.addPredicate(pred)
     }
 
+    /**
+     * Adds a "greater or equal" predicate to WHERE (path >= value).
+     */
     fun <N : Number> whereGte(path: Path<N>, value: N) {
         val pred = cb.ge(path as Expression<out Number>, value)
         ctx.addPredicate(pred)
     }
 
+    /**
+     * Adds a "less than" predicate to WHERE (path < value).
+     */
     fun <N : Number> whereLt(path: Path<N>, value: N) {
         val pred = cb.lt(path as Expression<out Number>, value)
         ctx.addPredicate(pred)
     }
 
+    /**
+     * Adds a "less or equal" predicate to WHERE (path <= value).
+     */
     fun <N : Number> whereLte(path: Path<N>, value: N) {
         val pred = cb.le(path as Expression<out Number>, value)
         ctx.addPredicate(pred)
     }
 
-    // INFIX FLUENT OPERATORS
+    /**
+     * Fluent equality operator: `field eq value`.
+     */
     infix fun <T> Path<T>.eq(value: T): Predicate =
         cb.equal(this, value)
 
+    /**
+     * Fluent inequality operator: `field neq value`.
+     */
     infix fun <T> Path<T>.neq(value: T): Predicate =
         cb.notEqual(this, value)
 
+    /**
+     * Fluent "greater than" operator: `field gt value`.
+     */
     infix fun <N : Number> Path<N>.gt(value: N): Predicate =
         cb.gt(this as Expression<out Number>, value)
 
+    /**
+     * Fluent "greater or equal" operator: `field gte value`.
+     */
     infix fun <N : Number> Path<N>.gte(value: N): Predicate =
         cb.ge(this as Expression<out Number>, value)
 
+    /**
+     * Fluent "less than" operator: `field lt value`.
+     */
     infix fun <N : Number> Path<N>.lt(value: N): Predicate =
         cb.lt(this as Expression<out Number>, value)
 
+    /**
+     * Fluent "less or equal" operator: `field lte value`.
+     */
     infix fun <N : Number> Path<N>.lte(value: N): Predicate =
         cb.le(this as Expression<out Number>, value)
 
+    /**
+     * Creates a literal numeric expression (Int) for DSL operations.
+     */
     fun literal(value: Int): NumericExpr<Int> =
         NumericExpr("lit_$value", cb.literal(value))
 
+    /**
+     * Creates a literal numeric expression (Double) for computations.
+     */
     fun literal(value: Double): NumericExpr<Double> =
         NumericExpr("lit_$value", cb.literal(value))
 
-    fun SpatialExpr<Boolean>.toPredicate(): Predicate {
-        return dsl.cb.isTrue(this.expr)
-    }
+    /**
+     * Converts a SpatialExpr<Boolean> into a Predicate for WHERE clauses.
+     */
+    fun SpatialExpr<Boolean>.toPredicate(): Predicate =
+        dsl.cb.isTrue(this.expr)
 
+    /**
+     * Converts a SpatialExpr<T> into a Selection<T> for SELECT/DTO mapping.
+     */
     fun <T> SpatialExpr<T>.asSelection(): Selection<T> =
         expr.alias(name)
+
 }
