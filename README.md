@@ -1,3 +1,5 @@
+![GONEXAR_BANNER_LINKEDIN](https://github.com/user-attachments/assets/5c3eaabf-f778-463a-9e87-29bafb284565)
+
 # Gonexar — Spatial DSL for Kotlin + JPA + PostGIS
 Versão: **0.1.0-alpha**
 
