@@ -7,7 +7,7 @@ a API ainda pode mudar com maior frequência.
 
 ---
 
-## [0.1.0-alpha] - 2025-11-28
+## [0.1.0-alpha] - 2025-12-01
 ### Status
 Prévia técnica (Alpha).  
 API ainda pode mudar entre versões.
