@@ -43,16 +43,21 @@ dependencies {
 
 publishing {
     publications {
-        create<MavenPublication>("gonexarSpatial") {
-            groupId = "com.gonexar.spatial"
-            artifactId = "gonexar-spatial-jpa"
-            version = "1.0.0"
-
+        create<MavenPublication>("mavenJava") {
             from(components["java"])
+            groupId = "com.gonexar"
+            artifactId = "gonexar-spatial-jpa"
+            version = "0.1.0-alpha"
         }
     }
 
     repositories {
-        mavenLocal()
+        maven {
+            url = uri("https://maven.pkg.github.com/gonexar/gonexar-spatial-jpa")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
 }
