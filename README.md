@@ -37,11 +37,13 @@ O Gonexar resolve isso com:
 
 ## 🚀 Quickstart
 
-### 1. Instale localmente
+### 1. Instale
 ```bash
 ./gradlew publishToMavenLocal
-ou
 ./gradlew publish
+dependencies {
+    implementation("com.gonexar:gonexar-spatial-jpa:0.1.0-alpha")
+}
 ```
 Adicione o dialect no ``application.properties``:
 ``spring.jpa.database-platform=org.gonexar.dialect.GonexarPostgisDialect``
