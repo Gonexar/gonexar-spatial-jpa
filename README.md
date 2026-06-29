@@ -310,14 +310,22 @@ spring.jpa.hibernate.ddl-auto=create-drop
 Habilite as funções espaciais no H2GIS antes dos testes:
 
 ```kotlin
-@BeforeAll
-fun enableH2GIS(@Autowired dataSource: DataSource) {
-    dataSource.connection.use { conn ->
-        conn.createStatement().execute("""
-            CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL
-            FOR "org.h2gis.functions.factory.H2GISFunctions.load";
-            CALL H2GIS_SPATIAL();
-        """)
+@SpringBootTest
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)   // required: allows @BeforeAll on instance method
+class MyRepositoryTest {
+
+    @Autowired lateinit var dataSource: DataSource
+
+    @BeforeAll
+    fun enableH2GIS() {
+        dataSource.connection.use { conn ->
+            conn.createStatement().execute("""
+                CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL
+                FOR "org.h2gis.functions.factory.H2GISFunctions.load";
+                CALL H2GIS_SPATIAL();
+            """)
+        }
     }
 }
 ```
