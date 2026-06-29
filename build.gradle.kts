@@ -1,8 +1,8 @@
 plugins {
     `java-library`
     `maven-publish`
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.jpa") version "1.9.22"
+    kotlin("jvm") version "2.2.0"
+    kotlin("plugin.jpa") version "2.2.0"
 }
 
 group = "com.gonexar"
@@ -25,20 +25,20 @@ dependencies {
     // Kotlin
     implementation(kotlin("stdlib"))
     // JTS Geometry
-    api("org.locationtech.jts:jts-core:1.19.0")
+    api("org.locationtech.jts:jts-core:1.20.0")
     // PostGIS JDBC
-    api("net.postgis:postgis-jdbc:2.5.0")
+    api("net.postgis:postgis-jdbc:2024.1.0")
     api("org.postgresql:postgresql:42.7.7")
     // Hibernate Core
-    api("org.hibernate.orm:hibernate-core:6.4.1.Final")
-    api("org.hibernate.orm:hibernate-spatial:6.4.1.Final")
+    api("org.hibernate.orm:hibernate-core:6.6.18.Final")
+    api("org.hibernate.orm:hibernate-spatial:6.6.18.Final")
     // Jackson
-    api("com.fasterxml.jackson.core:jackson-databind:2.15.2")
+    api("com.fasterxml.jackson.core:jackson-databind:2.18.4")
     // JPA API
-    api("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    api("jakarta.persistence:jakarta.persistence-api:3.2.0")
     // Lombok (opcional)
-    compileOnly("org.projectlombok:lombok:1.18.30")
-    annotationProcessor("org.projectlombok:lombok:1.18.30")
+    compileOnly("org.projectlombok:lombok:1.18.38")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
 }
 
 publishing {
