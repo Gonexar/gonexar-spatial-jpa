@@ -33,7 +33,7 @@ dependencies {
     api("org.hibernate.orm:hibernate-core:6.6.18.Final")
     api("org.hibernate.orm:hibernate-spatial:6.6.18.Final")
     // Jackson
-    api("com.fasterxml.jackson.core:jackson-databind:2.18.4")
+    api("com.fasterxml.jackson.core:jackson-databind:2.21.1")
     // JPA API
     api("jakarta.persistence:jakarta.persistence-api:3.2.0")
     // Lombok (opcional)
