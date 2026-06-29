@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.gonexar"
-version = "0.1.0-alpha"
+version = "1.2.0-alpha"
 
 java {
     withSourcesJar()
@@ -47,7 +47,7 @@ publishing {
             from(components["java"])
             groupId = "com.gonexar"
             artifactId = "gonexar-spatial-jpa"
-            version = "0.1.0-alpha"
+            version = "1.2.0-alpha"
         }
     }
 
