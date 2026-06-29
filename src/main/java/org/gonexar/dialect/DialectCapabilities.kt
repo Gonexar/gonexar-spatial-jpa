@@ -61,10 +61,10 @@ package org.gonexar.dialect
 data class DialectCapabilities(
     val supportsGeography: Boolean,
     val supportsRaster: Boolean,
-    val supportsTransform: Boolean = true,
-    val supportsCollect: Boolean = true,
-    val supportsLineMerge: Boolean = true,
-    val supportsHausdorff: Boolean = true,
+    val supportsTransform: Boolean = false,
+    val supportsCollect: Boolean = false,
+    val supportsLineMerge: Boolean = false,
+    val supportsHausdorff: Boolean = false,
 ) {
     companion object {
         /** Full PostGIS capabilities (geography + raster). */
