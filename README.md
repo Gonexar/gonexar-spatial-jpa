@@ -260,3 +260,155 @@ class IntersectRepository(
 }
 ```
 Com o Gonexar Spatial DSL, qualquer consulta espacial pode retornar tanto as entidades do banco (modo JPA tradicional) quanto DTOs customizados (modo API/analytics). A mudança entre os dois modos exige apenas trocar uma linha dentro do DSL.
+
+---
+
+## Sistema de Dialetos
+
+A partir da versão `0.2.0-alpha`, o Gonexar introduz uma **camada de abstração de dialetos**
+que permite suportar diferentes bancos de dados espaciais sem modificar o core do DSL.
+
+### Dialetos disponíveis
+
+| Dialect class | Banco de dados | Geography | Raster | Uso recomendado |
+|---|---|:---:|:---:|---|
+| `GonexarPostgisDialect` | PostgreSQL + PostGIS | ✓ | ✓ | Produção |
+| `GonexarH2GisDialect` | H2 + H2GIS | ✗ | ✗ | Testes de integração |
+
+### Matriz de capacidades
+
+| Operação | PostGIS | H2GIS |
+|---|:---:|:---:|
+| ST_Intersects, ST_Contains, ST_Within … | ✓ | ✓ |
+| ST_Buffer, ST_Simplify, ST_Transform | ✓ | ✓ |
+| ST_Distance, ST_Length, ST_Area | ✓ | ✓ |
+| ST_Union, ST_Intersection, ST_Difference | ✓ | ✓ |
+| ST_LineInterpolatePoint, ST_Azimuth | ✓ | ✓ |
+| ST_HausdorffDistance | ✓ | ✓ |
+| `geography` cast (métricas geodésicas) | ✓ | ✗ |
+| ST_DWithin | ✓ | ✗ |
+| Raster (ST_Clip, ST_Slope, ST_Value …) | ✓ | ✗ |
+
+### Testes com H2GIS (sem Docker)
+
+Adicione nas dependências de teste:
+
+```kotlin
+// build.gradle.kts
+testImplementation("org.orbisgis:h2gis:2.2.3")
+testImplementation("com.h2database:h2:2.2.224")
+```
+
+Configure o profile de teste:
+
+```properties
+# src/test/resources/application-test.properties
+spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+spring.datasource.driver-class-name=org.h2.Driver
+spring.jpa.database-platform=org.gonexar.dialect.h2gis.GonexarH2GisDialect
+spring.jpa.hibernate.ddl-auto=create-drop
+```
+
+Habilite as funções espaciais no H2GIS antes dos testes:
+
+```kotlin
+@SpringBootTest
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)   // required: allows @BeforeAll on instance method
+class MyRepositoryTest {
+
+    @Autowired lateinit var dataSource: DataSource
+
+    @BeforeAll
+    fun enableH2GIS() {
+        dataSource.connection.use { conn ->
+            conn.createStatement().execute("""
+                CREATE ALIAS IF NOT EXISTS H2GIS_SPATIAL
+                FOR "org.h2gis.functions.factory.H2GISFunctions.load";
+                CALL H2GIS_SPATIAL();
+            """)
+        }
+    }
+}
+```
+
+### Implementando um novo dialeto
+
+Para suportar um novo banco (ex: MySQL Spatial), implemente três artefatos:
+
+**1. `SpatialFunctionContributor`** — registra funções SQL:
+
+```kotlin
+object MySQLSpatialFunctionContributor : SpatialFunctionContributor {
+
+    override val capabilities: DialectCapabilities
+        get() = DialectCapabilities.MYSQL_SPATIAL
+
+    override fun registerFunctions(functionContributions: FunctionContributions) {
+        val f = functionContributions.functionRegistry
+        val geomRef = BasicTypeReference("geometry", Geometry::class.java, SqlTypes.GEOMETRY)
+        f.register("ST_Intersects", StandardSQLFunction("ST_Intersects", StandardBasicTypes.BOOLEAN))
+        f.register("ST_Buffer",     StandardSQLFunction("ST_Buffer", geomRef))
+        // ...
+    }
+}
+```
+
+**2. `SpatialTypeContributor`** — registra tipos Java/JDBC:
+
+```kotlin
+object MySQLSpatialTypeContributor : SpatialTypeContributor {
+    override fun registerTypes(typeContributions: TypeContributions, serviceRegistry: ServiceRegistry) {
+        typeContributions.typeConfiguration.javaTypeRegistry
+            .addDescriptor(JTSGeometryJavaType.GEOMETRY_INSTANCE)
+    }
+}
+```
+
+**3. Dialect Hibernate** — delega aos contributors:
+
+```kotlin
+class GonexarMySQLSpatialDialect : MySQLDialect() {
+    override fun contributeTypes(tc: TypeContributions, sr: ServiceRegistry) {
+        super.contributeTypes(tc, sr)
+        MySQLSpatialTypeContributor.registerTypes(tc, sr)
+    }
+    override fun initializeFunctionRegistry(fc: FunctionContributions) {
+        super.initializeFunctionRegistry(fc)
+        MySQLSpatialFunctionContributor.registerFunctions(fc)
+    }
+}
+```
+
+Configure:
+
+```properties
+spring.jpa.database-platform=org.gonexar.dialect.mysql.GonexarMySQLSpatialDialect
+```
+
+---
+
+## Estrutura do projeto
+
+```
+src/main/java/org/gonexar/
+├── ast/              # AST para SELECT (SelectBuilder, SelectNode)
+├── dialect/          # Sistema de dialetos
+│   ├── SpatialFunctionContributor.kt  ◄ interface — registro de funções
+│   ├── SpatialTypeContributor.kt      ◄ interface — registro de tipos
+│   ├── DialectCapabilities.kt         ◄ capabilities por banco
+│   ├── GonexarPostgisDialect.kt       ◄ dialeto de produção
+│   ├── postgis/
+│   │   ├── PostgisFunctionContributor.kt
+│   │   └── PostgisTypeContributor.kt
+│   └── h2gis/
+│       ├── GonexarH2GisDialect.kt
+│       ├── H2GisFunctionContributor.kt
+│       └── H2GisTypeContributor.kt
+├── expression/       # SpatialExpr<T>, NumericExpr<T>
+├── operator/         # Mixin interfaces de operadores
+├── query/            # Funções de consulta (Intersect.kt)
+├── repository/       # GonexarSpatialRepository
+├── spatial/          # Core do DSL (SpatialDslContainer, QueryContainer …)
+└── type/             # Sistema de tipos Raster
+```
