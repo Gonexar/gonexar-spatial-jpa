@@ -39,9 +39,20 @@ import org.hibernate.service.ServiceRegistry
  *
  * ## Extension points
  *
- * To add PostGIS functions without modifying this class, extend [PostgisFunctionContributor]
- * or create a subclass of [GonexarPostgisDialect] and override
- * [initializeFunctionRegistry] to call `super` first and then add extra registrations.
+ * To add PostGIS functions without modifying this class, implement [SpatialFunctionContributor]
+ * with your extra registrations, then subclass [GonexarPostgisDialect] and override
+ * [initializeFunctionRegistry] to call `super` first and delegate to your contributor:
+ *
+ * ```kotlin
+ * class MyExtendedPostgisDialect : GonexarPostgisDialect() {
+ *     override fun initializeFunctionRegistry(fc: FunctionContributions) {
+ *         super.initializeFunctionRegistry(fc)   // registers all standard PostGIS functions
+ *         MyExtraFunctionContributor.registerFunctions(fc)
+ *     }
+ * }
+ * ```
+ *
+ * Note: [PostgisFunctionContributor] is a Kotlin `object` and cannot be subclassed.
  *
  * @see PostgisFunctionContributor
  * @see PostgisTypeContributor
