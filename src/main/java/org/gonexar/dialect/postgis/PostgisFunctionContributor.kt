@@ -59,8 +59,8 @@ object PostgisFunctionContributor : SpatialFunctionContributor {
         // ============================
         // CORE GEOMETRY
         // ============================
-        f.register("ST_GeometryType", StandardSQLFunction("ST_GeometryType", geometryTypeRef))
-        f.register("ST_Dimension", StandardSQLFunction("ST_Dimension", geometryTypeRef))
+        f.register("ST_GeometryType", StandardSQLFunction("ST_GeometryType", StandardBasicTypes.STRING))
+        f.register("ST_Dimension", StandardSQLFunction("ST_Dimension", StandardBasicTypes.INTEGER))
         f.register("ST_Envelope", StandardSQLFunction("ST_Envelope", geometryTypeRef))
         f.register("ST_Boundary", StandardSQLFunction("ST_Boundary", geometryTypeRef))
         f.register("ST_Buffer", StandardSQLFunction("ST_Buffer", geometryTypeRef))
