@@ -60,11 +60,16 @@ object RasterUserType : UserType<Raster> {
 
     override fun isMutable(): Boolean = true
 
-    override fun disassemble(value: Raster?): Serializable? = value?.bytes
+    override fun disassemble(value: Raster?): Serializable? {
+        if (value == null) return null
+        return Pair(value.bytes.clone(), value.srid)  // Kotlin Pair is Serializable; preserve both fields
+    }
 
+    @Suppress("UNCHECKED_CAST")
     override fun assemble(cached: Serializable?, owner: Any?): Raster? {
         if (cached == null) return null
-        return Raster((cached as ByteArray).clone())
+        val (bytes, srid) = cached as Pair<ByteArray, Int?>
+        return Raster(bytes.clone(), srid)
     }
 
     override fun replace(original: Raster?, target: Raster?, owner: Any?): Raster? =
