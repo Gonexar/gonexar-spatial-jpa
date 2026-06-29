@@ -19,3 +19,9 @@ dependencyResolutionManagement {
         }
     }
 }
+
+include(
+    "gonexar-spatial-core",
+    "gonexar-spatial-postgis",
+    "gonexar-spatial-h2gis"
+)
