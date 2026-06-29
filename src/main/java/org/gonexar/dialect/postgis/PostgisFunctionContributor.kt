@@ -123,13 +123,23 @@ object PostgisFunctionContributor : SpatialFunctionContributor {
         f.register("ST_Value", StandardSQLFunction("ST_Value", StandardBasicTypes.DOUBLE))
         f.register("ST_NearestValue", StandardSQLFunction("ST_NearestValue", StandardBasicTypes.DOUBLE))
         f.register("ST_Clip", StandardSQLFunction("ST_Clip", rasterTypeRef))
-        f.register("ST_SummaryStats", StandardSQLFunction("ST_SummaryStats", StandardBasicTypes.STRING))
-        f.register("ST_SummaryStatsAgg", StandardSQLFunction("ST_SummaryStatsAgg", StandardBasicTypes.STRING))
         f.register("ST_MapAlgebraExpr", StandardSQLFunction("ST_MapAlgebraExpr", rasterTypeRef))
         f.register("ST_Reclass", StandardSQLFunction("ST_Reclass", rasterTypeRef))
         f.register("ST_Normalize", StandardSQLFunction("ST_Normalize", rasterTypeRef))
         f.register("ST_Slope", StandardSQLFunction("ST_Slope", rasterTypeRef))
         f.register("ST_Aspect", StandardSQLFunction("ST_Aspect", rasterTypeRef))
+
+        // ST_SummaryStats returns a PostgreSQL composite type (summarystats).
+        // JPA cannot project composite types directly, so we register one pattern function
+        // per field using the PostgreSQL composite-field access syntax: (ST_SummaryStats(?1)).field.
+        // This calls ST_SummaryStats once per field, which is the only approach that avoids
+        // adding custom SQL functions in the user's database.
+        f.registerPattern("raster_stat_count",  "(ST_SummaryStats(?1)).count",  StandardBasicTypes.LONG)
+        f.registerPattern("raster_stat_sum",    "(ST_SummaryStats(?1)).sum",    StandardBasicTypes.DOUBLE)
+        f.registerPattern("raster_stat_mean",   "(ST_SummaryStats(?1)).mean",   StandardBasicTypes.DOUBLE)
+        f.registerPattern("raster_stat_stddev", "(ST_SummaryStats(?1)).stddev", StandardBasicTypes.DOUBLE)
+        f.registerPattern("raster_stat_min",    "(ST_SummaryStats(?1)).min",    StandardBasicTypes.DOUBLE)
+        f.registerPattern("raster_stat_max",    "(ST_SummaryStats(?1)).max",    StandardBasicTypes.DOUBLE)
 
         // ============================
         // SERIALISATION
