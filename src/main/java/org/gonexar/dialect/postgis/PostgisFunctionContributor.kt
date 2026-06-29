@@ -134,12 +134,19 @@ object PostgisFunctionContributor : SpatialFunctionContributor {
         // per field using the PostgreSQL composite-field access syntax: (ST_SummaryStats(?1)).field.
         // This calls ST_SummaryStats once per field, which is the only approach that avoids
         // adding custom SQL functions in the user's database.
-        f.registerPattern("raster_stat_count",  "(ST_SummaryStats(?1)).count",  StandardBasicTypes.LONG)
-        f.registerPattern("raster_stat_sum",    "(ST_SummaryStats(?1)).sum",    StandardBasicTypes.DOUBLE)
-        f.registerPattern("raster_stat_mean",   "(ST_SummaryStats(?1)).mean",   StandardBasicTypes.DOUBLE)
-        f.registerPattern("raster_stat_stddev", "(ST_SummaryStats(?1)).stddev", StandardBasicTypes.DOUBLE)
-        f.registerPattern("raster_stat_min",    "(ST_SummaryStats(?1)).min",    StandardBasicTypes.DOUBLE)
-        f.registerPattern("raster_stat_max",    "(ST_SummaryStats(?1)).max",    StandardBasicTypes.DOUBLE)
+        //
+        // registerPattern expects BasicType<*>, not BasicTypeReference<*>, so we resolve
+        // through the TypeConfiguration that is already available on FunctionContributions.
+        val typeRegistry = functionContributions.typeConfiguration.basicTypeRegistry
+        val longType   = typeRegistry.resolve(StandardBasicTypes.LONG)
+        val doubleType = typeRegistry.resolve(StandardBasicTypes.DOUBLE)
+
+        f.registerPattern("raster_stat_count",  "(ST_SummaryStats(?1)).count",  longType)
+        f.registerPattern("raster_stat_sum",    "(ST_SummaryStats(?1)).sum",    doubleType)
+        f.registerPattern("raster_stat_mean",   "(ST_SummaryStats(?1)).mean",   doubleType)
+        f.registerPattern("raster_stat_stddev", "(ST_SummaryStats(?1)).stddev", doubleType)
+        f.registerPattern("raster_stat_min",    "(ST_SummaryStats(?1)).min",    doubleType)
+        f.registerPattern("raster_stat_max",    "(ST_SummaryStats(?1)).max",    doubleType)
 
         // ============================
         // SERIALISATION

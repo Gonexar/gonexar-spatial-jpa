@@ -26,7 +26,7 @@ object RasterJavaType : AbstractJavaType<Raster>(Raster::class.java) {
             @Suppress("UNCHECKED_CAST")
             return value.bytes as X?
         }
-        throw UnknownUnwrapTypeException(type)
+        throw UnknownUnwrapTypeException(type ?: return null)
     }
 
     override fun <X : Any?> wrap(
