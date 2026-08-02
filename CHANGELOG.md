@@ -7,6 +7,22 @@ a API ainda pode mudar com maior frequência.
 
 ---
 
+## [0.2.0-alpha] - 2026-08-02
+### Status
+Prévia técnica (Alpha).
+API ainda pode mudar entre versões.
+
+### Added
+- Sobrecarga não-reificada de `query(ctx, resultClass, block)`, que recebe `Class<R>`
+  explicitamente. Permite chamar a DSL espacial a partir de código que não pode reificar
+  `R` em tempo de compilação (ex.: implementações de interface, fronteiras genéricas).
+
+### Changed
+- `query(ctx, block)` (reificada) passou a delegar para a sobrecarga não-reificada,
+  eliminando a duplicação de lógica de construção da `CriteriaQuery` entre as duas versões.
+
+---
+
 ## [0.1.0-alpha] - 2025-12-01
 ### Status
 Prévia técnica (Alpha).  
