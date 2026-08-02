@@ -13,26 +13,20 @@ object RasterJavaType : AbstractJavaType<Raster>(Raster::class.java) {
     override fun areEqual(one: Raster?, another: Raster?): Boolean {
         if (one === another) return true
         if (one == null || another == null) return false
-        return one.bytes.contentEquals(another.bytes)
+        return one == another  // delegates to Raster.equals() which compares bytes + srid
     }
 
-    // Em RasterJavaType
     override fun <X : Any?> unwrap(
         value: Raster?,
         type: Class<X?>?,
         options: WrapperOptions?
     ): X? {
         if (value == null) return null
-
-        // Converte Raster -> byte[]
         if (type == ByteArray::class.java) {
             @Suppress("UNCHECKED_CAST")
             return value.bytes as X?
         }
-        // Converte Raster -> Blob (opcional)
-        // if (Blob::class.java.isAssignableFrom(type)) { ... }
-
-        return type?.let { throw UnknownUnwrapTypeException(it) }
+        throw UnknownUnwrapTypeException(type ?: return null)
     }
 
     override fun <X : Any?> wrap(
@@ -40,18 +34,9 @@ object RasterJavaType : AbstractJavaType<Raster>(Raster::class.java) {
         options: WrapperOptions?
     ): Raster? {
         if (value == null) return null
-
-        // Converte byte[] -> Raster
-        if (value is ByteArray) {
-            return Raster(value)
-        }
-        // Converte Blob -> Raster (opcional)
-        // if (value is Blob) { return Raster(value.getBytes(1, value.length().toInt())) }
-
+        if (value is ByteArray) return Raster(value)
         throw UnknownUnwrapTypeException(value.javaClass)
     }
 
-    override fun extractHashCode(value: Raster?): Int {
-        return value?.bytes?.contentHashCode() ?: 0
-    }
+    override fun extractHashCode(value: Raster?): Int = value?.hashCode() ?: 0
 }
