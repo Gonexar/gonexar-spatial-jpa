@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.gonexar"
-version = "0.2.0-alpha"
+version = "1.3.0-alpha"
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
