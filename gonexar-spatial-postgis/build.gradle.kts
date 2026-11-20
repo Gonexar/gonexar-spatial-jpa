@@ -15,3 +15,9 @@ dependencies {
     // sobrescrever a versão declarando o driver diretamente.
     runtimeOnly("org.postgresql:postgresql:42.7.7")
 }
+
+dependencies {
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.21.4"))
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.testcontainers:junit-jupiter")
+}

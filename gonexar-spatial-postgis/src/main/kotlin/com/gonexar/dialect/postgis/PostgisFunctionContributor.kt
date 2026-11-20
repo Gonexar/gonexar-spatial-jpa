@@ -8,7 +8,7 @@ import org.hibernate.dialect.function.StandardSQLFunction
 import org.hibernate.type.BasicTypeReference
 import org.hibernate.type.SqlTypes
 import org.hibernate.type.StandardBasicTypes
-import org.locationtech.jts.geom.Geometry
+import org.hibernate.spatial.JTSGeometryJavaType
 
 /**
  * Registers all PostGIS spatial functions into Hibernate's function registry.
@@ -28,7 +28,7 @@ import org.locationtech.jts.geom.Geometry
  * Register it inside [registerFunctions] using the appropriate return type reference:
  *
  * ```kotlin
- * f.register("ST_Snap", StandardSQLFunction("ST_Snap", geometryTypeRef))
+ * registerGeometryFunction("ST_Snap")
  * ```
  *
  * For aggregate functions use [org.hibernate.dialect.function.StandardSqmAggregateFunction] instead.
@@ -44,11 +44,18 @@ object PostgisFunctionContributor : SpatialFunctionContributor {
     override fun registerFunctions(functionContributions: FunctionContributions) {
         val f = functionContributions.functionRegistry
 
-        val geometryTypeRef = BasicTypeReference(
-            "geometry",
-            Geometry::class.java,
-            SqlTypes.GEOMETRY
+        // Resolve the geometry type from the registries instead of a named BasicTypeReference:
+        // a reference named "geometry" resolves to an ad-hoc type that Hibernate cannot use
+        // as a constructor argument in DTO projections (cb.construct), failing with an NPE.
+        val typeConfig = functionContributions.typeConfiguration
+        val geometryType = typeConfig.basicTypeRegistry.resolve(
+            JTSGeometryJavaType.GEOMETRY_INSTANCE,
+            typeConfig.jdbcTypeRegistry.getDescriptor(SqlTypes.GEOMETRY),
         )
+
+        fun registerGeometryFunction(name: String) {
+            f.namedDescriptorBuilder(name).setInvariantType(geometryType).register()
+        }
 
         // Same registration key and JDBC code as RasterUserType (contributed by
         // PostgisTypeContributor), so raster function results resolve to that type.
@@ -63,12 +70,12 @@ object PostgisFunctionContributor : SpatialFunctionContributor {
         // ============================
         f.register("ST_GeometryType", StandardSQLFunction("ST_GeometryType", StandardBasicTypes.STRING))
         f.register("ST_Dimension", StandardSQLFunction("ST_Dimension", StandardBasicTypes.INTEGER))
-        f.register("ST_Envelope", StandardSQLFunction("ST_Envelope", geometryTypeRef))
-        f.register("ST_Boundary", StandardSQLFunction("ST_Boundary", geometryTypeRef))
-        f.register("ST_Buffer", StandardSQLFunction("ST_Buffer", geometryTypeRef))
-        f.register("ST_Simplify", StandardSQLFunction("ST_Simplify", geometryTypeRef))
-        f.register("ST_Transform", StandardSQLFunction("ST_Transform", geometryTypeRef))
-        f.register("ST_SetSRID", StandardSQLFunction("ST_SetSRID", geometryTypeRef))
+        registerGeometryFunction("ST_Envelope")
+        registerGeometryFunction("ST_Boundary")
+        registerGeometryFunction("ST_Buffer")
+        registerGeometryFunction("ST_Simplify")
+        registerGeometryFunction("ST_Transform")
+        registerGeometryFunction("ST_SetSRID")
 
         // ============================
         // TOPOLOGY PREDICATES
@@ -96,28 +103,28 @@ object PostgisFunctionContributor : SpatialFunctionContributor {
         // GEOGRAPHY CAST (PostGIS-only)
         // ============================
         f.register("geography", StandardSQLFunction("geography"))
-        f.register("geometry", StandardSQLFunction("geometry", geometryTypeRef))
+        registerGeometryFunction("geometry")
 
         // ============================
         // LINES / ROUTES
         // ============================
-        f.register("ST_LineInterpolatePoint", StandardSQLFunction("ST_LineInterpolatePoint", geometryTypeRef))
-        f.register("ST_LineSubstring", StandardSQLFunction("ST_LineSubstring", geometryTypeRef))
+        registerGeometryFunction("ST_LineInterpolatePoint")
+        registerGeometryFunction("ST_LineSubstring")
         f.register("ST_LineLocatePoint", StandardSQLFunction("ST_LineLocatePoint", StandardBasicTypes.DOUBLE))
-        f.register("ST_StartPoint", StandardSQLFunction("ST_StartPoint", geometryTypeRef))
-        f.register("ST_EndPoint", StandardSQLFunction("ST_EndPoint", geometryTypeRef))
-        f.register("ST_ClosestPoint", StandardSQLFunction("ST_ClosestPoint", geometryTypeRef))
+        registerGeometryFunction("ST_StartPoint")
+        registerGeometryFunction("ST_EndPoint")
+        registerGeometryFunction("ST_ClosestPoint")
         f.register("ST_Azimuth", StandardSQLFunction("ST_Azimuth", StandardBasicTypes.DOUBLE))
-        f.register("ST_LineMerge", StandardSQLFunction("ST_LineMerge", geometryTypeRef))
+        registerGeometryFunction("ST_LineMerge")
 
         // ============================
         // SET OPERATIONS
         // ============================
-        f.register("ST_Intersection", StandardSQLFunction("ST_Intersection", geometryTypeRef))
-        f.register("ST_Union", StandardSQLFunction("ST_Union", geometryTypeRef))
-        f.register("ST_Difference", StandardSQLFunction("ST_Difference", geometryTypeRef))
-        f.register("ST_SymDifference", StandardSQLFunction("ST_SymDifference", geometryTypeRef))
-        f.register("ST_Collect", StandardSQLFunction("ST_Collect", geometryTypeRef))
+        registerGeometryFunction("ST_Intersection")
+        registerGeometryFunction("ST_Union")
+        registerGeometryFunction("ST_Difference")
+        registerGeometryFunction("ST_SymDifference")
+        registerGeometryFunction("ST_Collect")
 
         // ============================
         // RASTER (PostGIS-only)

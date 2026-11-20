@@ -22,6 +22,19 @@ API ainda pode mudar entre versões.
 - O driver `org.postgresql:postgresql` passou a ser dependência de runtime do módulo
   PostGIS, e não mais de compilação.
 
+### Fixed
+- Funções que retornam geometria (`intersection`, `union`, `closestPoint`, `startPoint`,
+  `simplify`, `transform` …) falhavam com `NullPointerException` ao serem projetadas em DTOs
+  (`select { field(...) }`), nos dois dialetos. O tipo de retorno agora é resolvido pelo
+  registro de tipos do Hibernate.
+- `select<E> { entity() }` (e o helper `intersects` de `GonexarSpatialRepository`) falhava
+  procurando um construtor `E(E)`. Agora seleciona a própria entidade.
+- H2GIS: `buffer`, `distance`, `area` e `lengthGeography` falhavam porque a DSL usa casts
+  `geography(...)`/`geometry(...)`. No H2GIS esses casts viram no-op e as operações rodam
+  em unidades planas.
+- H2GIS: removidas as funções `ST_LineLocatePoint` e `ST_HausdorffDistance`, que não existem
+  no H2GIS 2.2; `DialectCapabilities.H2GIS.supportsHausdorff` passa a ser `false`.
+
 ### Removed
 - Dependências não utilizadas: `jackson-databind` (antes exposta como `api` no core) e Lombok.
 
@@ -30,6 +43,9 @@ API ainda pode mudar entre versões.
   jar de fontes e javadoc gerado pelo Dokka.
 - Workflows de CI (build em PRs) e de publicação (por tag `v<versão>`).
 - Toolchain Java 17 provisionado automaticamente (foojay resolver).
+- Suíte de testes: unitários no core, integração com H2GIS e com PostGIS via Testcontainers,
+  e verificação de que toda função registrada nos dialetos existe no banco.
+- Cobertura com Kover agregada nos três módulos, com piso de 70% de linhas no CI.
 
 ---
 

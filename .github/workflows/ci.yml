@@ -21,5 +21,30 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build
-        run: ./gradlew build publishToMavenLocal --no-configuration-cache
+      # Os testes do módulo PostGIS sobem um container com Testcontainers (Docker do runner).
+      - name: Build e testes
+        run: ./gradlew build koverXmlReport koverVerify publishToMavenLocal --no-configuration-cache
+
+      - name: Resumo da cobertura
+        if: always()
+        run: |
+          report=build/reports/kover/report.xml
+          [ -f "$report" ] || exit 0
+          python3 - "$report" >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root = ET.parse(sys.argv[1]).getroot()
+          print("### Cobertura (Kover)\n\n| Tipo | Cobertura |\n|---|---|")
+          for c in root.findall("counter"):
+              missed, covered = int(c.get("missed")), int(c.get("covered"))
+              print(f"| {c.get('type').title()} | {covered / (missed + covered) * 100:.1f}% ({covered}/{missed + covered}) |")
+          PY
+
+      - name: Publicar relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            build/reports/kover/
+            */build/reports/tests/test/
+          if-no-files-found: ignore
