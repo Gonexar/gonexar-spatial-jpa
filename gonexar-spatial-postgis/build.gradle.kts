@@ -21,3 +21,9 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:junit-jupiter")
 }
+
+// Repassa -Dgonexar.postgis.image=<imagem> da linha de comando do Gradle para a JVM de teste;
+// sem ele, PostgisTestDatabase usa a imagem padrão.
+tasks.withType<Test>().configureEach {
+    providers.systemProperty("gonexar.postgis.image").orNull?.let { systemProperty("gonexar.postgis.image", it) }
+}

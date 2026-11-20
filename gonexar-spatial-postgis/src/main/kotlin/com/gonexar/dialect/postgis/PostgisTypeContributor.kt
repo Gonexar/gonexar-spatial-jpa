@@ -42,8 +42,8 @@ object PostgisTypeContributor : SpatialTypeContributor {
         javaRegistry.addDescriptor(JTSGeometryJavaType.GEOMETRY_INSTANCE)
         jdbcRegistry.addDescriptor(PGGeometryJdbcType.INSTANCE_WKB_2)
 
-        // Gonexar Raster type: PostGIS custom `raster` type. Null binds as Types.OTHER; non-null
-        // values bind as bytes (setBytes) and are read back with getBytes.
+        // Gonexar Raster type: PostGIS custom `raster` type. Values travel as hex-encoded WKB
+        // bound with Types.OTHER and are decoded back to bytes when read (see RasterUserType).
         javaRegistry.addDescriptor(RasterJavaType)
         typeContributions.contributeType(RasterUserType)
     }
