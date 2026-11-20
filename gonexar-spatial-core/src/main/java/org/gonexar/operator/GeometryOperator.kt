@@ -386,14 +386,12 @@ interface GeometryOperator {
             expr
         }
 
-        val alias = dsl.autoAlias(expr)
-
         val perimeterExpr =
             if (useGeography)
                 dsl.cb.function("ST_Perimeter", Double::class.java, arg, dsl.cb.literal(useSpheroid))
             else
                 dsl.cb.function("ST_Perimeter", Double::class.java, arg)
 
-        return dsl.register(alias, perimeterExpr)
+        return dsl.register(dsl.autoAlias(perimeterExpr), perimeterExpr)
     }
 }

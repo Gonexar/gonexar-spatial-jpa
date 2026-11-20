@@ -116,7 +116,7 @@ object H2GisFunctionContributor : SpatialFunctionContributor {
         // ============================
         f.register("ST_AsText", StandardSQLFunction("ST_AsText", StandardBasicTypes.STRING))
         f.register("ST_AsGeoJSON", StandardSQLFunction("ST_AsGeoJSON", StandardBasicTypes.STRING))
-        f.register("ST_AsBinary", StandardSQLFunction("ST_AsBinary"))
+        f.register("ST_AsBinary", StandardSQLFunction("ST_AsBinary", StandardBasicTypes.BINARY))
         f.register("ST_IsValid", StandardSQLFunction("ST_IsValid", StandardBasicTypes.BOOLEAN))
     }
 }

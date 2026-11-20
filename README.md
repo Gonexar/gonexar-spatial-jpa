@@ -4,7 +4,7 @@
 
 **DSL Kotlin type-safe para consultas espaciais com Hibernate ORM e PostGIS.**
 
-> Versão: **0.1.0-alpha** — A API pública continua sujeita a mudanças.
+> Versão: **1.3.0-alpha** — A API pública continua sujeita a mudanças.
 
 ---
 
@@ -188,7 +188,11 @@ repositories {
 }
 
 dependencies {
-    implementation("com.gonexar:gonexar-spatial-jpa:0.1.0-alpha")
+    // PostgreSQL + PostGIS (produção). Já traz o gonexar-spatial-core.
+    implementation("com.gonexar:gonexar-spatial-postgis:1.3.0-alpha")
+
+    // H2 + H2GIS (testes de integração). Também traz o core.
+    testImplementation("com.gonexar:gonexar-spatial-h2gis:1.3.0-alpha")
 }
 ```
 
@@ -960,24 +964,30 @@ spring.jpa.database-platform=org.gonexar.dialect.mysql.GonexarMySQLSpatialDialec
 ## Estrutura do projeto
 
 ```
-src/main/java/org/gonexar/
-├── ast/              # AST para SELECT (SelectBuilder, SelectNode)
-├── dialect/          # Sistema de dialetos
-│   ├── SpatialFunctionContributor.kt  ◄ interface — registro de funções
-│   ├── SpatialTypeContributor.kt      ◄ interface — registro de tipos
-│   ├── DialectCapabilities.kt         ◄ capabilities por banco
-│   ├── GonexarPostgisDialect.kt       ◄ dialeto de produção
-│   ├── postgis/
-│   │   ├── PostgisFunctionContributor.kt
-│   │   └── PostgisTypeContributor.kt
-│   └── h2gis/
-│       ├── GonexarH2GisDialect.kt
-│       ├── H2GisFunctionContributor.kt
-│       └── H2GisTypeContributor.kt
-├── expression/       # SpatialExpr<T>, NumericExpr<T>
-├── operator/         # Mixin interfaces de operadores
-├── query/            # Funções de consulta (Intersect.kt)
-├── repository/       # GonexarSpatialRepository
-├── spatial/          # Core do DSL (SpatialDslContainer, QueryContainer …)
-└── type/             # Sistema de tipos Raster
+gonexar-spatial-core/      # DSL, operadores e tipos, sem dependência de banco
+└── src/main/java/org/gonexar/
+    ├── ast/               # AST para SELECT (SelectBuilder, SelectNode)
+    ├── dialect/           # Contratos de dialeto
+    │   ├── SpatialFunctionContributor.kt  ◄ interface — registro de funções
+    │   ├── SpatialTypeContributor.kt      ◄ interface — registro de tipos
+    │   └── DialectCapabilities.kt         ◄ capabilities por banco
+    ├── expression/        # SpatialExpr<T>, NumericExpr<T>
+    ├── operator/          # Mixin interfaces de operadores
+    ├── query/             # Funções de consulta (Intersect.kt)
+    ├── repository/        # GonexarSpatialRepository
+    ├── spatial/           # Core do DSL (SpatialDslContainer, QueryContainer …)
+    └── type/              # Sistema de tipos Raster
+
+gonexar-spatial-postgis/   # Dialeto de produção (PostgreSQL + PostGIS)
+└── src/main/java/org/gonexar/dialect/
+    ├── GonexarPostgisDialect.kt
+    └── postgis/
+        ├── PostgisFunctionContributor.kt
+        └── PostgisTypeContributor.kt
+
+gonexar-spatial-h2gis/     # Dialeto de testes (H2 + H2GIS)
+└── src/main/java/org/gonexar/dialect/h2gis/
+    ├── GonexarH2GisDialect.kt
+    ├── H2GisFunctionContributor.kt
+    └── H2GisTypeContributor.kt
 ```
