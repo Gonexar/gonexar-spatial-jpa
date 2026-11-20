@@ -12,22 +12,16 @@ interface MatrixOperator {
         dsl: SpatialDslContext<*, *>,
         geom: SpatialExpr<Geometry>
     ): SpatialExpr<Double?> {
-        val alias = dsl.autoAlias(expr)
-        return dsl.register(
-            alias,
-            dsl.cb.function("ST_Value", Double::class.java, expr, geom.expr)
-        )
+        val value = dsl.cb.function("ST_Value", Double::class.java, expr, geom.expr)
+        return dsl.register(dsl.autoAlias(value), value)
     }
 
     fun SpatialExpr<Raster>.stClip(
         dsl: SpatialDslContext<*, *>,
         geom: SpatialExpr<Geometry>
     ): SpatialExpr<Raster> {
-        val alias = dsl.autoAlias(expr)
-        return dsl.register(
-            alias,
-            dsl.cb.function("ST_Clip", Raster::class.java, expr, geom.expr)
-        )
+        val clipped = dsl.cb.function("ST_Clip", Raster::class.java, expr, geom.expr)
+        return dsl.register(dsl.autoAlias(clipped), clipped)
     }
 
     /**

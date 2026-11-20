@@ -50,10 +50,12 @@ object PostgisFunctionContributor : SpatialFunctionContributor {
             SqlTypes.GEOMETRY
         )
 
+        // Same registration key and JDBC code as RasterUserType (contributed by
+        // PostgisTypeContributor), so raster function results resolve to that type.
         val rasterTypeRef: BasicTypeReference<Raster> = BasicTypeReference(
-            "raster",
+            Raster::class.java.typeName,
             Raster::class.java,
-            SqlTypes.VARBINARY
+            SqlTypes.OTHER
         )
 
         // ============================
@@ -153,7 +155,7 @@ object PostgisFunctionContributor : SpatialFunctionContributor {
         // ============================
         f.register("ST_AsText", StandardSQLFunction("ST_AsText", StandardBasicTypes.STRING))
         f.register("ST_AsGeoJSON", StandardSQLFunction("ST_AsGeoJSON", StandardBasicTypes.STRING))
-        f.register("ST_AsBinary", StandardSQLFunction("ST_AsBinary"))
+        f.register("ST_AsBinary", StandardSQLFunction("ST_AsBinary", StandardBasicTypes.BINARY))
         f.register("ST_IsValid", StandardSQLFunction("ST_IsValid", StandardBasicTypes.BOOLEAN))
     }
 }
