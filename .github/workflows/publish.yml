@@ -33,20 +33,39 @@ jobs:
             exit 1
           fi
 
-      - name: Conferir secrets
+      # Mesmos secrets do gonexar-android-sdk:
+      #   CENTRAL_TOKEN    -> base64("usuário:senha") do user token do Central Portal
+      #   SIGNING_KEY      -> chave GPG privada em ASCII armor
+      #   SIGNING_PASSWORD -> senha da chave GPG
+      # O plugin vanniktech precisa de usuário e senha separados, então o token
+      # é decodificado aqui e exposto (mascarado) às etapas seguintes.
+      - name: Preparar credenciais
         env:
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: |
-          for name in MAVEN_CENTRAL_USERNAME MAVEN_CENTRAL_PASSWORD GPG_PRIVATE_KEY GPG_PASSPHRASE; do
+          for name in CENTRAL_TOKEN SIGNING_KEY SIGNING_PASSWORD; do
             if [ -z "${!name}" ]; then
               echo "::error::Secret ${name} não configurado."
               missing=1
             fi
           done
-          [ -z "$missing" ]
+          [ -z "$missing" ] || exit 1
+
+          decoded=$(printf '%s' "$CENTRAL_TOKEN" | base64 -d 2>/dev/null) || decoded=""
+          case "$decoded" in
+            *:*) ;;
+            *) echo "::error::CENTRAL_TOKEN deve ser base64 de 'usuário:senha' do user token do Central Portal."; exit 1 ;;
+          esac
+          user="${decoded%%:*}"
+          pass="${decoded#*:}"
+          echo "::add-mask::${user}"
+          echo "::add-mask::${pass}"
+          {
+            echo "ORG_GRADLE_PROJECT_mavenCentralUsername=${user}"
+            echo "ORG_GRADLE_PROJECT_mavenCentralPassword=${pass}"
+          } >> "$GITHUB_ENV"
 
       - name: Build
         run: ./gradlew build
@@ -54,7 +73,5 @@ jobs:
       - name: Publicar no Central Portal
         run: ./gradlew publishToMavenCentral --no-configuration-cache
         env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_PRIVATE_KEY }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_PASSPHRASE }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}

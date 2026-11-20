@@ -7,14 +7,17 @@ Os três módulos (`gonexar-spatial-core`, `gonexar-spatial-postgis` e
 
 ## Secrets necessários
 
-Configure no repositório (ou na organização) em *Settings → Secrets and variables → Actions*:
+São os mesmos do `gonexar-android-sdk`. O ideal é defini-los no nível da
+organização (*Organization settings → Secrets and variables → Actions*), para
+servirem aos dois repositórios; também funcionam como secrets do repositório.
 
 | Secret | Conteúdo |
 |---|---|
-| `MAVEN_CENTRAL_USERNAME` | Usuário do *user token* gerado em central.sonatype.com → *View Account* → *Generate User Token* |
-| `MAVEN_CENTRAL_PASSWORD` | Senha do mesmo *user token* |
-| `GPG_PRIVATE_KEY` | Chave privada GPG em ASCII armor (`gpg --armor --export-secret-keys <KEY_ID>`) |
-| `GPG_PASSPHRASE` | Senha da chave GPG |
+| `CENTRAL_TOKEN` | `base64("usuário:senha")` do *user token* gerado em central.sonatype.com → *View Account* → *Generate User Token* (ex.: `printf 'usuario:senha' \| base64`) |
+| `SIGNING_KEY` | Chave privada GPG em ASCII armor (`gpg --armor --export-secret-keys <KEY_ID>`) |
+| `SIGNING_PASSWORD` | Senha da chave GPG |
+
+O workflow decodifica o `CENTRAL_TOKEN` e repassa usuário e senha ao plugin.
 
 A chave pública precisa estar em um keyserver aceito pelo Central
 (ex.: `gpg --keyserver keyserver.ubuntu.com --send-keys <KEY_ID>`).
