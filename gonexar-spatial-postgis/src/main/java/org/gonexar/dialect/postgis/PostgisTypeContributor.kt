@@ -17,7 +17,7 @@ import org.hibernate.spatial.dialect.postgis.PGGeometryJdbcType
  * |------------------------------------|----------------------------------------|-------------------|
  * | `JTSGeometryJavaType` (JTS)        | `PGGeometryJdbcType.INSTANCE_WKB_2`    | `geometry`        |
  * | `RasterJavaType` (Gonexar)         | —                                      | `raster`          |
- * | `RasterUserType` (Gonexar)         | via `UserType` contract (`Types.OTHER`)| `raster`          |
+ * | `RasterUserType` (Gonexar)         | via `UserType` contract               | `raster`          |
  *
  * ## Wire format
  *
@@ -42,7 +42,8 @@ object PostgisTypeContributor : SpatialTypeContributor {
         javaRegistry.addDescriptor(JTSGeometryJavaType.GEOMETRY_INSTANCE)
         jdbcRegistry.addDescriptor(PGGeometryJdbcType.INSTANCE_WKB_2)
 
-        // Gonexar Raster type: PostGIS custom `raster` type, bound as Types.OTHER and read as WKB bytes
+        // Gonexar Raster type: PostGIS custom `raster` type. Null binds as Types.OTHER; non-null
+        // values bind as bytes (setBytes) and are read back with getBytes.
         javaRegistry.addDescriptor(RasterJavaType)
         typeContributions.contributeType(RasterUserType)
     }
