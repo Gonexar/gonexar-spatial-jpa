@@ -4,7 +4,11 @@
 
 **DSL Kotlin type-safe para consultas espaciais com Hibernate ORM e PostGIS.**
 
-> Versão: **0.3.0-alpha** — A API pública continua sujeita a mudanças.
+[![Maven Central](https://img.shields.io/maven-central/v/com.gonexar/gonexar-spatial-core?label=Maven%20Central)](https://central.sonatype.com/namespace/com.gonexar)
+[![CI](https://github.com/Gonexar/gonexar-spatial-jpa/actions/workflows/ci.yml/badge.svg)](https://github.com/Gonexar/gonexar-spatial-jpa/actions/workflows/ci.yml)
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue.svg)](LICENSE)
+
+> Versão: **0.3.0-alpha**, primeira versão publicada no Maven Central. A API pública continua sujeita a mudanças.
 
 ---
 
@@ -20,6 +24,7 @@
 8. [Exemplos de implementação](#exemplos-de-implementação)
 9. [Sistema de dialetos](#sistema-de-dialetos)
 10. [Estrutura do projeto](#estrutura-do-projeto)
+11. [Testes do projeto](#testes-do-projeto)
 
 ---
 
@@ -174,7 +179,14 @@ A mesma query pode retornar a entidade JPA completa ou um DTO customizado com ca
 
 ### 1. Adicionar a dependência
 
-Os artefatos são publicados no **Maven Central** sob o groupId `com.gonexar`.
+Os artefatos são publicados no **Maven Central** sob o groupId `com.gonexar`, com sources,
+javadoc (Dokka) e assinatura GPG.
+
+| Artefato | Quando usar |
+|---|---|
+| `com.gonexar:gonexar-spatial-postgis` | Produção com PostgreSQL + PostGIS. Traz o core. |
+| `com.gonexar:gonexar-spatial-h2gis` | Testes sem Docker com H2 + H2GIS. Traz o core e o H2GIS. |
+| `com.gonexar:gonexar-spatial-core` | Só a DSL e os contratos de dialeto, para escrever um dialeto próprio. |
 
 ```kotlin
 // build.gradle.kts
@@ -190,6 +202,30 @@ dependencies {
     testImplementation("com.gonexar:gonexar-spatial-h2gis:0.3.0-alpha")
 }
 ```
+
+<details>
+<summary>Maven</summary>
+
+```xml
+<dependency>
+    <groupId>com.gonexar</groupId>
+    <artifactId>gonexar-spatial-postgis</artifactId>
+    <version>0.3.0-alpha</version>
+</dependency>
+<dependency>
+    <groupId>com.gonexar</groupId>
+    <artifactId>gonexar-spatial-h2gis</artifactId>
+    <version>0.3.0-alpha</version>
+    <scope>test</scope>
+</dependency>
+```
+
+</details>
+
+> **Vindo de uma versão anterior à 0.3.0-alpha?** O artefato único `gonexar-spatial-jpa`
+> foi dividido em três módulos e o pacote base mudou de `org.gonexar` para `com.gonexar`.
+> Atualize os imports e a classe em `spring.jpa.database-platform`
+> (`com.gonexar.dialect.postgis.GonexarPostgisDialect`). Detalhes no [CHANGELOG](CHANGELOG.md).
 
 ### 2. Desenvolvimento local
 
@@ -871,12 +907,11 @@ que permite suportar diferentes bancos de dados espaciais sem modificar o core d
 
 ### Testes com H2GIS (sem Docker)
 
-Adicione nas dependências de teste:
+Adicione nas dependências de teste. O módulo já traz o H2GIS (e o driver H2) para o runtime de teste:
 
 ```kotlin
 // build.gradle.kts
-testImplementation("org.orbisgis:h2gis:2.2.3")
-testImplementation("com.h2database:h2:2.2.224")
+testImplementation("com.gonexar:gonexar-spatial-h2gis:0.3.0-alpha")
 ```
 
 Configure o profile de teste:
@@ -926,9 +961,15 @@ object MySQLSpatialFunctionContributor : SpatialFunctionContributor {
 
     override fun registerFunctions(functionContributions: FunctionContributions) {
         val f = functionContributions.functionRegistry
-        val geomRef = BasicTypeReference("geometry", Geometry::class.java, SqlTypes.GEOMETRY)
+        val typeConfig = functionContributions.typeConfiguration
+        // Resolva o tipo geometry pelos registries. Um BasicTypeReference("geometry") não
+        // funciona como argumento de construtor em projeções DTO (cb.construct).
+        val geometryType = typeConfig.basicTypeRegistry.resolve(
+            JTSGeometryJavaType.GEOMETRY_INSTANCE,
+            typeConfig.jdbcTypeRegistry.getDescriptor(SqlTypes.GEOMETRY),
+        )
         f.register("ST_Intersects", StandardSQLFunction("ST_Intersects", StandardBasicTypes.BOOLEAN))
-        f.register("ST_Buffer",     StandardSQLFunction("ST_Buffer", geomRef))
+        f.namedDescriptorBuilder("ST_Buffer").setInvariantType(geometryType).register()
         // ...
     }
 }
