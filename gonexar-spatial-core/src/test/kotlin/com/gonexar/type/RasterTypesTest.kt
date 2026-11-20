@@ -78,24 +78,26 @@ class RasterUserTypeTest {
     }
 
     @Test
-    fun `reads bytes from the result set`() {
+    fun `decodes the hex WKB text PostGIS returns`() {
         val rs = mockk<ResultSet>()
-        every { rs.getBytes(1) } returns byteArrayOf(1, 2)
-        every { rs.getBytes(2) } returns null
+        every { rs.getString(1) } returns "0102FF"
+        every { rs.getString(2) } returns "0aff"
+        every { rs.getString(3) } returns null
 
-        assertThat(RasterUserType.nullSafeGet(rs, 1, session, null)).isEqualTo(Raster(byteArrayOf(1, 2)))
-        assertThat(RasterUserType.nullSafeGet(rs, 2, session, null)).isNull()
+        assertThat(RasterUserType.nullSafeGet(rs, 1, session, null)).isEqualTo(Raster(byteArrayOf(1, 2, -1)))
+        assertThat(RasterUserType.nullSafeGet(rs, 2, session, null)).isEqualTo(Raster(byteArrayOf(10, -1)))
+        assertThat(RasterUserType.nullSafeGet(rs, 3, session, null)).isNull()
     }
 
     @Test
-    fun `binds null as OTHER and values as bytes`() {
+    fun `binds null and values as OTHER, values as hex WKB`() {
         val st = mockk<PreparedStatement>(relaxed = true)
 
         RasterUserType.nullSafeSet(st, null, 1, session)
-        RasterUserType.nullSafeSet(st, Raster(byteArrayOf(5)), 2, session)
+        RasterUserType.nullSafeSet(st, Raster(byteArrayOf(5, -1)), 2, session)
 
         verify { st.setNull(1, Types.OTHER) }
-        verify { st.setBytes(2, byteArrayOf(5)) }
+        verify { st.setObject(2, "05ff", Types.OTHER) }
     }
 
     @Test

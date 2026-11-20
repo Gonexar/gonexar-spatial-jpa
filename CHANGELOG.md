@@ -23,6 +23,9 @@ API ainda pode mudar entre versões.
   PostGIS, e não mais de compilação.
 
 ### Fixed
+- Raster (#14): colunas e projeções `raster` voltavam como texto hex em vez dos bytes WKB,
+  e gravar um `Raster` falhava com "column is of type raster but expression is of type bytea".
+  `RasterUserType` agora lê o texto hex e o decodifica, e grava hex WKB com `Types.OTHER`.
 - Funções que retornam geometria (`intersection`, `union`, `closestPoint`, `startPoint`,
   `simplify`, `transform` …) falhavam com `NullPointerException` ao serem projetadas em DTOs
   (`select { field(...) }`), nos dois dialetos. O tipo de retorno agora é resolvido pelo
