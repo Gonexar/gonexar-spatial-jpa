@@ -48,7 +48,11 @@ class SelectBuilder<T : Any>(
      */
     @Suppress("UNCHECKED_CAST")
     inline fun <reified R> build(cb: CriteriaBuilder, root: Root<*>): Selection<R> {
-        // We use the R type from the outer class parameter implicitly here
+        // `select<E> { entity() }` selects the root entity itself. Wrapping it in
+        // cb.construct(E, root) would make Hibernate look for an E(E) constructor and fail.
+        if (rootArgs.singleOrNull() === EntityNode) {
+            return root as Selection<R>
+        }
         return buildNode(cb, root, NestedDtoNode(R::class.java, rootArgs)) as Selection<R>
     }
 

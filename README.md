@@ -858,14 +858,16 @@ que permite suportar diferentes bancos de dados espaciais sem modificar o core d
 | Operação | PostGIS | H2GIS |
 |---|:---:|:---:|
 | ST_Intersects, ST_Contains, ST_Within … | ✓ | ✓ |
-| ST_Buffer, ST_Simplify, ST_Transform | ✓ | ✓ |
-| ST_Distance, ST_Length, ST_Area | ✓ | ✓ |
+| ST_Buffer, ST_Simplify, ST_Transform | ✓ | ✓ ¹ |
+| ST_Distance, ST_Length, ST_Area | ✓ | ✓ ¹ |
 | ST_Union, ST_Intersection, ST_Difference | ✓ | ✓ |
 | ST_LineInterpolatePoint, ST_Azimuth | ✓ | ✓ |
-| ST_HausdorffDistance | ✓ | ✓ |
+| ST_LineLocatePoint, ST_HausdorffDistance | ✓ | ✗ |
 | `geography` cast (métricas geodésicas) | ✓ | ✗ |
 | ST_DWithin | ✓ | ✗ |
 | Raster (ST_Clip, ST_Slope, ST_Value …) | ✓ | ✗ |
+
+¹ No H2GIS, os casts `geography(...)`/`geometry(...)` que a DSL usa em `buffer`, `distance`, `area` e `lengthGeography` viram no-op: as operações rodam em unidades planas do SRID (graus em 4326), não em metros.
 
 ### Testes com H2GIS (sem Docker)
 
@@ -995,3 +997,20 @@ gonexar-spatial-h2gis/     # Dialeto de testes (H2 + H2GIS)
     ├── H2GisFunctionContributor.kt
     └── H2GisTypeContributor.kt
 ```
+
+### Testes do projeto
+
+```bash
+./gradlew build          # compila e roda todos os testes
+./gradlew koverLog       # mostra a cobertura agregada dos três módulos
+./gradlew koverHtmlReport  # relatório em build/reports/kover/html
+```
+
+| Módulo | O que é testado | Requisito |
+|---|---|---|
+| `gonexar-spatial-core` | Tipos raster, capabilities e contexto da DSL (unitários) | nenhum |
+| `gonexar-spatial-h2gis` | DSL de ponta a ponta em H2 + H2GIS, funções registradas no dialeto | nenhum |
+| `gonexar-spatial-postgis` | DSL em PostgreSQL + PostGIS real (geography, rotas, raster), funções registradas | Docker (Testcontainers) |
+
+A imagem do PostGIS pode ser trocada com `-Dgonexar.postgis.image=<imagem>`. O CI exige
+pelo menos 70% de cobertura de linhas (`koverVerify`).

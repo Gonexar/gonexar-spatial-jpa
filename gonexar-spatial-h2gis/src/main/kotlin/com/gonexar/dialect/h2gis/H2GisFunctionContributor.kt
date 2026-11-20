@@ -4,10 +4,10 @@ import com.gonexar.dialect.DialectCapabilities
 import com.gonexar.dialect.SpatialFunctionContributor
 import org.hibernate.boot.model.FunctionContributions
 import org.hibernate.dialect.function.StandardSQLFunction
-import org.hibernate.type.BasicTypeReference
+import org.hibernate.query.sqm.produce.function.StandardFunctionReturnTypeResolvers
+import org.hibernate.spatial.JTSGeometryJavaType
 import org.hibernate.type.SqlTypes
 import org.hibernate.type.StandardBasicTypes
-import org.locationtech.jts.geom.Geometry
 
 /**
  * Registers H2GIS spatial functions into Hibernate's function registry.
@@ -21,12 +21,15 @@ import org.locationtech.jts.geom.Geometry
  * H2GIS uses the same `ST_*` naming convention as PostGIS for ISO functions.
  * However, several PostGIS-specific features are **not available**:
  *
- * - `geography` type and geodesic metric functions
+ * - `geography` type and geodesic metric functions: `geography(...)` and `geometry(...)`
+ *   casts are rendered as no-ops, so metric operations run in planar units
+ * - `ST_LineLocatePoint` and `ST_HausdorffDistance` (not shipped by H2GIS 2.2)
  * - Raster operations (`ST_Value`, `ST_Clip`, `ST_Slope`, etc.)
  * - `ST_DWithin` (use `ST_Distance(a,b) <= d` instead)
  * - `ST_Transform` requires the H2GIS `spatial_ref_sys` table populated
  *
- * The DSL guards dialect-specific operations via [DialectCapabilities.H2GIS].
+ * [DialectCapabilities.H2GIS] describes what this dialect supports. The DSL does not check
+ * it automatically: calling an unsupported operation fails when H2 executes the query.
  *
  * ## Supported functions
  *
@@ -34,8 +37,8 @@ import org.locationtech.jts.geom.Geometry
  * |----------------|------------------------------------------------------------------|
  * | Core geometry  | Envelope, Boundary, Buffer, Simplify, Transform, SetSRID         |
  * | Topology       | Intersects, Contains, Within, Covers, CoveredBy, Touches, Crosses, Overlaps |
- * | Metrics        | Distance, Length, Area, HausdorffDistance                        |
- * | Lines          | LineInterpolatePoint, LineSubstring, LineLocatePoint, StartPoint, EndPoint, ClosestPoint, Azimuth, LineMerge |
+ * | Metrics        | Distance, Length, Area                                           |
+ * | Lines          | LineInterpolatePoint, LineSubstring, StartPoint, EndPoint, ClosestPoint, Azimuth, LineMerge |
  * | Set operations | Intersection, Union, Difference, SymDifference, Collect          |
  * | Serialisation  | AsText, AsGeoJSON, AsBinary, IsValid                             |
  *
@@ -51,23 +54,45 @@ object H2GisFunctionContributor : SpatialFunctionContributor {
     override fun registerFunctions(functionContributions: FunctionContributions) {
         val f = functionContributions.functionRegistry
 
-        val geometryTypeRef = BasicTypeReference(
-            "geometry",
-            Geometry::class.java,
-            SqlTypes.GEOMETRY
+        // Resolve the geometry type from the registries instead of a named BasicTypeReference:
+        // a reference named "geometry" resolves to an ad-hoc type that Hibernate cannot use
+        // as a constructor argument in DTO projections (cb.construct), failing with an NPE.
+        val typeConfig = functionContributions.typeConfiguration
+        val geometryType = typeConfig.basicTypeRegistry.resolve(
+            JTSGeometryJavaType.GEOMETRY_INSTANCE,
+            typeConfig.jdbcTypeRegistry.getDescriptor(SqlTypes.GEOMETRY),
         )
+
+        fun registerGeometryFunction(name: String) {
+            f.namedDescriptorBuilder(name).setInvariantType(geometryType).register()
+        }
+
+        // ============================
+        // GEOGRAPHY / GEOMETRY CASTS
+        // ============================
+        // H2GIS has no geography type. The DSL wraps metric operations (buffer, distance,
+        // area, lengthGeography) in geography(...)/geometry(...) casts, so both are rendered
+        // as no-ops here: the operations still run, in planar units of the input SRID.
+        f.patternDescriptorBuilder("geography", "?1")
+            .setExactArgumentCount(1)
+            .setReturnTypeResolver(StandardFunctionReturnTypeResolvers.useFirstNonNull())
+            .register()
+        f.patternDescriptorBuilder("geometry", "?1")
+            .setExactArgumentCount(1)
+            .setReturnTypeResolver(StandardFunctionReturnTypeResolvers.useFirstNonNull())
+            .register()
 
         // ============================
         // CORE GEOMETRY
         // ============================
         f.register("ST_GeometryType", StandardSQLFunction("ST_GeometryType", StandardBasicTypes.STRING))
         f.register("ST_Dimension", StandardSQLFunction("ST_Dimension", StandardBasicTypes.INTEGER))
-        f.register("ST_Envelope", StandardSQLFunction("ST_Envelope", geometryTypeRef))
-        f.register("ST_Boundary", StandardSQLFunction("ST_Boundary", geometryTypeRef))
-        f.register("ST_Buffer", StandardSQLFunction("ST_Buffer", geometryTypeRef))
-        f.register("ST_Simplify", StandardSQLFunction("ST_Simplify", geometryTypeRef))
-        f.register("ST_Transform", StandardSQLFunction("ST_Transform", geometryTypeRef))
-        f.register("ST_SetSRID", StandardSQLFunction("ST_SetSRID", geometryTypeRef))
+        registerGeometryFunction("ST_Envelope")
+        registerGeometryFunction("ST_Boundary")
+        registerGeometryFunction("ST_Buffer")
+        registerGeometryFunction("ST_Simplify")
+        registerGeometryFunction("ST_Transform")
+        registerGeometryFunction("ST_SetSRID")
 
         // ============================
         // TOPOLOGY PREDICATES
@@ -88,28 +113,26 @@ object H2GisFunctionContributor : SpatialFunctionContributor {
         f.register("ST_Distance", StandardSQLFunction("ST_Distance", StandardBasicTypes.DOUBLE))
         f.register("ST_Length", StandardSQLFunction("ST_Length", StandardBasicTypes.DOUBLE))
         f.register("ST_Area", StandardSQLFunction("ST_Area", StandardBasicTypes.DOUBLE))
-        f.register("ST_HausdorffDistance", StandardSQLFunction("ST_HausdorffDistance", StandardBasicTypes.DOUBLE))
 
         // ============================
         // LINES / ROUTES
         // ============================
-        f.register("ST_LineInterpolatePoint", StandardSQLFunction("ST_LineInterpolatePoint", geometryTypeRef))
-        f.register("ST_LineSubstring", StandardSQLFunction("ST_LineSubstring", geometryTypeRef))
-        f.register("ST_LineLocatePoint", StandardSQLFunction("ST_LineLocatePoint", StandardBasicTypes.DOUBLE))
-        f.register("ST_StartPoint", StandardSQLFunction("ST_StartPoint", geometryTypeRef))
-        f.register("ST_EndPoint", StandardSQLFunction("ST_EndPoint", geometryTypeRef))
-        f.register("ST_ClosestPoint", StandardSQLFunction("ST_ClosestPoint", geometryTypeRef))
+        registerGeometryFunction("ST_LineInterpolatePoint")
+        registerGeometryFunction("ST_LineSubstring")
+        registerGeometryFunction("ST_StartPoint")
+        registerGeometryFunction("ST_EndPoint")
+        registerGeometryFunction("ST_ClosestPoint")
         f.register("ST_Azimuth", StandardSQLFunction("ST_Azimuth", StandardBasicTypes.DOUBLE))
-        f.register("ST_LineMerge", StandardSQLFunction("ST_LineMerge", geometryTypeRef))
+        registerGeometryFunction("ST_LineMerge")
 
         // ============================
         // SET OPERATIONS
         // ============================
-        f.register("ST_Intersection", StandardSQLFunction("ST_Intersection", geometryTypeRef))
-        f.register("ST_Union", StandardSQLFunction("ST_Union", geometryTypeRef))
-        f.register("ST_Difference", StandardSQLFunction("ST_Difference", geometryTypeRef))
-        f.register("ST_SymDifference", StandardSQLFunction("ST_SymDifference", geometryTypeRef))
-        f.register("ST_Collect", StandardSQLFunction("ST_Collect", geometryTypeRef))
+        registerGeometryFunction("ST_Intersection")
+        registerGeometryFunction("ST_Union")
+        registerGeometryFunction("ST_Difference")
+        registerGeometryFunction("ST_SymDifference")
+        registerGeometryFunction("ST_Collect")
 
         // ============================
         // SERIALISATION

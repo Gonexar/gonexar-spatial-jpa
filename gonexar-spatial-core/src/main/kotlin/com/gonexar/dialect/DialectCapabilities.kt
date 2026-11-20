@@ -33,7 +33,7 @@ package com.gonexar.dialect
  * | supportsTransform    |    ✓    |   ✓   |       ✗       |       ✓        |
  * | supportsCollect      |    ✓    |   ✓   |       ✗       |       ✓        |
  * | supportsLineMerge    |    ✓    |   ✓   |       ✗       |       ✗        |
- * | supportsHausdorff    |    ✓    |   ✓   |       ✗       |       ✗        |
+ * | supportsHausdorff    |    ✓    |   ✗   |       ✗       |       ✗        |
  *
  * @property supportsGeography
  *   Whether the database supports the `geography` type and cast. PostGIS-only.
@@ -84,7 +84,7 @@ data class DialectCapabilities(
             supportsTransform = true,
             supportsCollect = true,
             supportsLineMerge = true,
-            supportsHausdorff = true,
+            supportsHausdorff = false,
         )
 
         /** MySQL Spatial / MariaDB capabilities (basic ISO SQL/MM). */

@@ -7,6 +7,7 @@ plugins {
     kotlin("plugin.jpa") version "2.2.0" apply false
     id("org.jetbrains.dokka") version "2.3.0" apply false
     id("com.vanniktech.maven.publish") version "0.35.0" apply false
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
 group = "com.gonexar"
@@ -17,6 +18,7 @@ subprojects {
     apply(plugin = "java-library")
     apply(plugin = "org.jetbrains.dokka")
     apply(plugin = "com.vanniktech.maven.publish")
+    apply(plugin = "org.jetbrains.kotlinx.kover")
 
     group = rootProject.group
     version = rootProject.version
@@ -24,6 +26,23 @@ subprojects {
     extensions.configure<JavaPluginExtension> {
         toolchain {
             languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+
+    dependencies {
+        "testImplementation"(platform("org.junit:junit-bom:5.13.4"))
+        "testImplementation"("org.junit.jupiter:junit-jupiter")
+        "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+        "testImplementation"("org.assertj:assertj-core:3.27.6")
+        "testImplementation"("io.mockk:mockk:1.14.5")
+        "testRuntimeOnly"("org.slf4j:slf4j-simple:2.0.17")
+    }
+
+    tasks.withType<Test>().configureEach {
+        useJUnitPlatform()
+        testLogging {
+            events("failed", "skipped")
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
     }
 
@@ -79,6 +98,25 @@ subprojects {
             issueManagement {
                 system.set("GitHub")
                 url.set("https://github.com/Gonexar/gonexar-spatial-jpa/issues")
+            }
+        }
+    }
+}
+
+// Relatório de cobertura agregado: os testes de integração dos módulos de dialeto
+// exercitam a DSL do core, então a cobertura é medida sobre os três módulos juntos.
+dependencies {
+    kover(project(":gonexar-spatial-core"))
+    kover(project(":gonexar-spatial-postgis"))
+    kover(project(":gonexar-spatial-h2gis"))
+}
+
+kover {
+    reports {
+        verify {
+            // Ponto de partida da 0.3.0-alpha (77% medidos); suba o piso conforme a cobertura crescer.
+            rule("Cobertura mínima de linhas") {
+                minBound(70)
             }
         }
     }
