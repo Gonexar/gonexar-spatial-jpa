@@ -127,7 +127,7 @@ gonexar-spatial-h2gis
 | `dialect/h2gis/H2GisFunctionContributor.kt` | `gonexar-spatial-h2gis/.../dialect/h2gis/` |
 | `dialect/h2gis/H2GisTypeContributor.kt` | `gonexar-spatial-h2gis/.../dialect/h2gis/` |
 
-> **Nenhuma alteração de package** é necessária. Os pacotes `com.gonexar.dialect`, `com.gonexar.dialect.postgis` e `com.gonexar.dialect.h2gis` já existem e apenas mudam de módulo físico.
+> **Atualização (0.3.0-alpha):** além da mudança de módulo, o pacote base passou de `org.gonexar` para `com.gonexar`. Aplicações existentes precisam trocar os imports `org.gonexar.*` por `com.gonexar.*` e apontar o dialeto PostGIS para `com.gonexar.dialect.postgis.GonexarPostgisDialect` (antes `org.gonexar.dialect.GonexarPostgisDialect`).
 
 ---
 

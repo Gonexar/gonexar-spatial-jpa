@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "2.2.0" apply false
     kotlin("plugin.jpa") version "2.2.0" apply false
     id("org.jetbrains.dokka") version "2.3.0" apply false
-    id("com.vanniktech.maven.publish") version "0.37.0" apply false
+    id("com.vanniktech.maven.publish") version "0.35.0" apply false
 }
 
 group = "com.gonexar"
