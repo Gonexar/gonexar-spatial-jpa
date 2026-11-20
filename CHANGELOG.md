@@ -7,7 +7,7 @@ a API ainda pode mudar com maior frequência.
 
 ---
 
-## [0.3.0-alpha] - Não publicada
+## [0.3.0-alpha] - 2026-11-20
 ### Status
 Prévia técnica (Alpha). Primeira versão publicada no Maven Central.
 API ainda pode mudar entre versões.
