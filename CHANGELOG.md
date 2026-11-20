@@ -7,6 +7,32 @@ a API ainda pode mudar com maior frequência.
 
 ---
 
+## [0.3.0-alpha] - Não publicada
+### Status
+Prévia técnica (Alpha). Primeira versão publicada no Maven Central.
+API ainda pode mudar entre versões.
+
+### Changed (breaking)
+- Pacote base renomeado de `org.gonexar` para `com.gonexar`, alinhado ao groupId.
+- `GonexarPostgisDialect` mudou para `com.gonexar.dialect.postgis.GonexarPostgisDialect`
+  (antes `org.gonexar.dialect.GonexarPostgisDialect`). O pacote `com.gonexar.dialect`
+  agora existe só no core, sem split package entre módulos.
+- Projeto dividido em três artefatos: `gonexar-spatial-core`, `gonexar-spatial-postgis`
+  e `gonexar-spatial-h2gis`. O artefato único `gonexar-spatial-jpa` não é mais publicado.
+- O driver `org.postgresql:postgresql` passou a ser dependência de runtime do módulo
+  PostGIS, e não mais de compilação.
+
+### Removed
+- Dependências não utilizadas: `jackson-databind` (antes exposta como `api` no core) e Lombok.
+
+### Build
+- Publicação no Maven Central (Central Portal) com POM completo, assinatura GPG,
+  jar de fontes e javadoc gerado pelo Dokka.
+- Workflows de CI (build em PRs) e de publicação (por tag `v<versão>`).
+- Toolchain Java 17 provisionado automaticamente (foojay resolver).
+
+---
+
 ## [0.2.0-alpha] - 2026-08-02
 ### Status
 Prévia técnica (Alpha).

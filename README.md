@@ -4,7 +4,7 @@
 
 **DSL Kotlin type-safe para consultas espaciais com Hibernate ORM e PostGIS.**
 
-> Versão: **1.3.0-alpha** — A API pública continua sujeita a mudanças.
+> Versão: **0.3.0-alpha** — A API pública continua sujeita a mudanças.
 
 ---
 
@@ -150,7 +150,7 @@ A mesma query pode retornar a entidade JPA completa ou um DTO customizado com ca
 | Componente | Versão | Notas |
 |---|---|---|
 | PostGIS Raster | instalado no servidor | Necessário para `ST_Value`, `ST_Clip`, `ST_Slope` |
-| postgis-jdbc | 2.5.0 | Driver JDBC para tipos PostGIS |
+| postgis-jdbc | 2024.1.0 | Driver JDBC para tipos PostGIS |
 
 ### Para testes (sem Docker)
 
@@ -172,35 +172,40 @@ A mesma query pode retornar a entidade JPA completa ou um DTO customizado com ca
 
 ## Como instalar
 
-### 1. Publicar localmente (desenvolvimento)
+### 1. Adicionar a dependência
+
+Os artefatos são publicados no **Maven Central** sob o groupId `com.gonexar`.
+
+```kotlin
+// build.gradle.kts
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // PostgreSQL + PostGIS (produção). Já traz o gonexar-spatial-core.
+    implementation("com.gonexar:gonexar-spatial-postgis:0.3.0-alpha")
+
+    // H2 + H2GIS (testes de integração). Também traz o core.
+    testImplementation("com.gonexar:gonexar-spatial-h2gis:0.3.0-alpha")
+}
+```
+
+### 2. Desenvolvimento local
+
+Para testar mudanças da biblioteca em outro projeto antes de publicar:
 
 ```bash
 ./gradlew publishToMavenLocal
 ```
 
-### 2. Adicionar a dependência
-
-```kotlin
-// build.gradle.kts
-repositories {
-    mavenLocal()
-    // ou o repositório Maven do Gonexar quando publicado
-}
-
-dependencies {
-    // PostgreSQL + PostGIS (produção). Já traz o gonexar-spatial-core.
-    implementation("com.gonexar:gonexar-spatial-postgis:1.3.0-alpha")
-
-    // H2 + H2GIS (testes de integração). Também traz o core.
-    testImplementation("com.gonexar:gonexar-spatial-h2gis:1.3.0-alpha")
-}
-```
+E adicione `mavenLocal()` aos repositórios do projeto consumidor.
 
 ### 3. Configurar o dialect
 
 ```properties
 # application.properties
-spring.jpa.database-platform=org.gonexar.dialect.GonexarPostgisDialect
+spring.jpa.database-platform=com.gonexar.dialect.postgis.GonexarPostgisDialect
 spring.datasource.driver-class-name=org.postgresql.Driver
 spring.datasource.url=jdbc:postgresql://localhost:5432/meu_banco
 spring.datasource.username=usuario
@@ -878,7 +883,7 @@ Configure o profile de teste:
 # src/test/resources/application-test.properties
 spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
 spring.datasource.driver-class-name=org.h2.Driver
-spring.jpa.database-platform=org.gonexar.dialect.h2gis.GonexarH2GisDialect
+spring.jpa.database-platform=com.gonexar.dialect.h2gis.GonexarH2GisDialect
 spring.jpa.hibernate.ddl-auto=create-drop
 ```
 
@@ -956,7 +961,7 @@ class GonexarMySQLSpatialDialect : MySQLDialect() {
 Configure:
 
 ```properties
-spring.jpa.database-platform=org.gonexar.dialect.mysql.GonexarMySQLSpatialDialect
+spring.jpa.database-platform=com.gonexar.dialect.mysql.GonexarMySQLSpatialDialect
 ```
 
 ---
@@ -965,7 +970,7 @@ spring.jpa.database-platform=org.gonexar.dialect.mysql.GonexarMySQLSpatialDialec
 
 ```
 gonexar-spatial-core/      # DSL, operadores e tipos, sem dependência de banco
-└── src/main/java/org/gonexar/
+└── src/main/kotlin/com/gonexar/
     ├── ast/               # AST para SELECT (SelectBuilder, SelectNode)
     ├── dialect/           # Contratos de dialeto
     │   ├── SpatialFunctionContributor.kt  ◄ interface — registro de funções
@@ -979,14 +984,13 @@ gonexar-spatial-core/      # DSL, operadores e tipos, sem dependência de banco
     └── type/              # Sistema de tipos Raster
 
 gonexar-spatial-postgis/   # Dialeto de produção (PostgreSQL + PostGIS)
-└── src/main/java/org/gonexar/dialect/
+└── src/main/kotlin/com/gonexar/dialect/postgis/
     ├── GonexarPostgisDialect.kt
-    └── postgis/
-        ├── PostgisFunctionContributor.kt
-        └── PostgisTypeContributor.kt
+    ├── PostgisFunctionContributor.kt
+    └── PostgisTypeContributor.kt
 
 gonexar-spatial-h2gis/     # Dialeto de testes (H2 + H2GIS)
-└── src/main/java/org/gonexar/dialect/h2gis/
+└── src/main/kotlin/com/gonexar/dialect/h2gis/
     ├── GonexarH2GisDialect.kt
     ├── H2GisFunctionContributor.kt
     └── H2GisTypeContributor.kt

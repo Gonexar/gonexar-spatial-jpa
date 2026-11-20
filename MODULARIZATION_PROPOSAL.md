@@ -25,7 +25,7 @@ A separação em módulos resolve:
 gonexar-spatial-jpa/               ← root project (build.gradle.kts + settings.gradle.kts)
 │
 ├── gonexar-spatial-core/          ← artefato: com.gonexar:gonexar-spatial-core
-│   └── src/main/java/org/gonexar/
+│   └── src/main/kotlin/com/gonexar/
 │       ├── ast/                   (SelectNode, SelectBuilder, ExprNode, EntityNode, NestedDtoNode)
 │       ├── expression/            (SpatialExpr, NumericExpr)
 │       ├── operator/              (GeometryOperator, TopologyOperator, SpatialOperator,
@@ -39,7 +39,7 @@ gonexar-spatial-jpa/               ← root project (build.gradle.kts + settings
 │                                   SpatialTypeContributor)   ← apenas interfaces/contratos
 │
 ├── gonexar-spatial-postgis/       ← artefato: com.gonexar:gonexar-spatial-postgis
-│   └── src/main/java/org/gonexar/dialect/
+│   └── src/main/kotlin/com/gonexar/dialect/
 │       ├── GonexarPostgisDialect.kt
 │       ├── postgis/
 │       │   ├── PostgisFunctionContributor.kt
@@ -47,7 +47,7 @@ gonexar-spatial-jpa/               ← root project (build.gradle.kts + settings
 │       └── (futuros: PostgisRasterContributor, etc.)
 │
 └── gonexar-spatial-h2gis/        ← artefato: com.gonexar:gonexar-spatial-h2gis
-    └── src/main/java/org/gonexar/dialect/
+    └── src/main/kotlin/com/gonexar/dialect/
         ├── h2gis/
         │   ├── GonexarH2GisDialect.kt
         │   ├── H2GisFunctionContributor.kt
@@ -127,7 +127,7 @@ gonexar-spatial-h2gis
 | `dialect/h2gis/H2GisFunctionContributor.kt` | `gonexar-spatial-h2gis/.../dialect/h2gis/` |
 | `dialect/h2gis/H2GisTypeContributor.kt` | `gonexar-spatial-h2gis/.../dialect/h2gis/` |
 
-> **Nenhuma alteração de package** é necessária. Os pacotes `org.gonexar.dialect`, `org.gonexar.dialect.postgis` e `org.gonexar.dialect.h2gis` já existem e apenas mudam de módulo físico.
+> **Atualização (0.3.0-alpha):** além da mudança de módulo, o pacote base passou de `org.gonexar` para `com.gonexar`. Aplicações existentes precisam trocar os imports `org.gonexar.*` por `com.gonexar.*` e apontar o dialeto PostGIS para `com.gonexar.dialect.postgis.GonexarPostgisDialect` (antes `org.gonexar.dialect.GonexarPostgisDialect`).
 
 ---
 

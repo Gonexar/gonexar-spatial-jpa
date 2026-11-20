@@ -2,10 +2,9 @@ plugins {
     kotlin("plugin.jpa")
 }
 
-dependencies {
-    // Kotlin
-    implementation(kotlin("stdlib"))
+description = "Gonexar Spatial JPA: DSL Kotlin type-safe para consultas espaciais com JPA Criteria e Hibernate Spatial."
 
+dependencies {
     // JTS Geometry — API pública para consumidores do core
     api("org.locationtech.jts:jts-core:1.20.0")
 
@@ -15,20 +14,4 @@ dependencies {
 
     // JPA API
     api("jakarta.persistence:jakarta.persistence-api:3.2.0")
-
-    // Jackson — para extensões de serialização
-    api("com.fasterxml.jackson.core:jackson-databind:2.21.1")
-
-    // Lombok (opcional)
-    compileOnly("org.projectlombok:lombok:1.18.38")
-    annotationProcessor("org.projectlombok:lombok:1.18.38")
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            artifactId = "gonexar-spatial-core"
-        }
-    }
 }
