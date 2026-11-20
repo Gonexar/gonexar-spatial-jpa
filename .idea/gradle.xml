@@ -9,6 +9,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/gonexar-spatial-core" />
+            <option value="$PROJECT_DIR$/gonexar-spatial-h2gis" />
+            <option value="$PROJECT_DIR$/gonexar-spatial-postgis" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -1,0 +1,77 @@
+name: Publish to Maven Central
+
+# Dispara ao criar uma tag v<versão> (ex.: v0.3.0-alpha) ou manualmente.
+# O deployment sobe para o Central Portal e fica em "Validated": a liberação
+# final é feita em https://central.sonatype.com/publishing/deployments.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Conferir tag x versão do projeto
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version=$(./gradlew -q properties --property version | awk '/^version:/ {print $2}')
+          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+            echo "::error::A tag ${GITHUB_REF_NAME} não corresponde à versão do build (${version})."
+            exit 1
+          fi
+
+      # Mesmos secrets do gonexar-android-sdk:
+      #   CENTRAL_TOKEN    -> base64("usuário:senha") do user token do Central Portal
+      #   SIGNING_KEY      -> chave GPG privada em ASCII armor
+      #   SIGNING_PASSWORD -> senha da chave GPG
+      # O plugin vanniktech precisa de usuário e senha separados, então o token
+      # é decodificado aqui e exposto (mascarado) às etapas seguintes.
+      - name: Preparar credenciais
+        env:
+          CENTRAL_TOKEN: ${{ secrets.CENTRAL_TOKEN }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          for name in CENTRAL_TOKEN SIGNING_KEY SIGNING_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Secret ${name} não configurado."
+              missing=1
+            fi
+          done
+          [ -z "$missing" ] || exit 1
+
+          decoded=$(printf '%s' "$CENTRAL_TOKEN" | base64 -d 2>/dev/null) || decoded=""
+          case "$decoded" in
+            *:*) ;;
+            *) echo "::error::CENTRAL_TOKEN deve ser base64 de 'usuário:senha' do user token do Central Portal."; exit 1 ;;
+          esac
+          user="${decoded%%:*}"
+          pass="${decoded#*:}"
+          echo "::add-mask::${user}"
+          echo "::add-mask::${pass}"
+          {
+            echo "ORG_GRADLE_PROJECT_mavenCentralUsername=${user}"
+            echo "ORG_GRADLE_PROJECT_mavenCentralPassword=${pass}"
+          } >> "$GITHUB_ENV"
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Publicar no Central Portal
+        run: ./gradlew publishToMavenCentral --no-configuration-cache
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
